@@ -1,0 +1,34 @@
+[
+  {
+    "action_threshold": 0.25,
+    "cell_size": 1.0,
+    "env": "pointmaze-teleport-navigate-v0",
+    "gamma": 0.98,
+    "iters": 160,
+    "method": "bellman_full",
+    "n_edges": 4197,
+    "n_states": 554,
+    "overall_success": 0.1,
+    "task1_success": 0.0,
+    "task2_success": 0.5,
+    "task3_success": 0.0,
+    "task4_success": 0.0,
+    "task5_success": 0.0
+  },
+  {
+    "action_threshold": 0.25,
+    "cell_size": 1.0,
+    "env": "pointmaze-teleport-navigate-v0",
+    "gamma": 0.98,
+    "iters": 11,
+    "method": "sto_trl_matched",
+    "n_edges": 4197,
+    "n_states": 554,
+    "overall_success": 0.4,
+    "task1_success": 0.5,
+    "task2_success": 0.0,
+    "task3_success": 0.5,
+    "task4_success": 0.5,
+    "task5_success": 0.5
+  }
+]

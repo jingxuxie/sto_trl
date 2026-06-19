@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+.DS_Store
+.env
+.venv/
+venv/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+wandb/
+
+# LaTeX build products. Keep source files and checked PDFs separately.
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Regenerable experiment caches.
+results/cache/
+
+# The reference TRL checkout is a local working tree with unpushed changes.
+# Store it separately, or apply external/trl_local_changes.patch after cloning.
+external/trl/

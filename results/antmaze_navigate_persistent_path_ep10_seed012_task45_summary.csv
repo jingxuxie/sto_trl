@@ -1,0 +1,4 @@
+method,n_eval_seeds,episodes_per_task,path_mode,task_ids,mean_success,success_std,task4_mean,task5_mean,seed_successes,sources
+bellman_matched,3,10,persistent,"4,5",0.000,0.000,0.000,0.000,"0:0.000;1:0.000;2:0.000","results/antmaze_navigate_persistent_path_ep10_seed0_task45.csv;results/antmaze_navigate_persistent_path_ep10_seed12_task45.csv"
+sto_trl_matched,3,10,persistent,"4,5",0.917,0.085,0.967,0.867,"0:1.000;1:0.950;2:0.800","results/antmaze_navigate_persistent_path_ep10_seed0_task45.csv;results/antmaze_navigate_persistent_path_ep10_seed12_task45.csv"
+bellman_full,3,10,persistent,"4,5",0.917,0.085,0.967,0.867,"0:1.000;1:0.950;2:0.800","results/antmaze_navigate_persistent_path_ep10_seed0_task45.csv;results/antmaze_navigate_persistent_path_ep10_seed12_task45.csv"

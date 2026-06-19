@@ -1,0 +1,4 @@
+action_bin_levels,action_threshold,cell_size,env,gamma,iters,method,n_edges,n_states,overall_success,task1_success,task2_success,task3_success,task4_success,task5_success
+3,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.16,0.0,0.0,0.4,0.2,0.2
+3,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.28,0.2,0.3,0.5,0.3,0.1
+3,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.38,0.1,0.4,0.6,0.6,0.2

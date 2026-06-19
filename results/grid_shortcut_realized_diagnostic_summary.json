@@ -1,0 +1,58 @@
+{
+  "bellman_6_sweeps": {
+    "mean_portal_overestimate_ratio": 0.8583796723024067,
+    "mean_regret": 0.48557463299478815,
+    "mean_success": 0.05111111111111111,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "bellman_7_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9376517696006514,
+    "mean_regret": 0.2310546374766822,
+    "mean_success": 0.051111111111111114,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "bellman_full": {
+    "mean_portal_overestimate_ratio": 0.898015720951529,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "mc_positive": {
+    "mean_portal_overestimate_ratio": 20.000000000000004,
+    "mean_regret": 0.35831463523573515,
+    "mean_success": 0.05111111111111111,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "sto_trl_6_sweeps": {
+    "mean_portal_overestimate_ratio": 0.8583796723024067,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "sto_trl_7_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9376517696006514,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "trl_log_realized": {
+    "mean_portal_overestimate_ratio": 20.0,
+    "mean_regret": 0.35831463523573515,
+    "mean_success": 0.05111111111111111,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "trl_raw_realized": {
+    "mean_portal_overestimate_ratio": 20.0,
+    "mean_regret": 0.35831463523573515,
+    "mean_success": 0.05111111111111111,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  }
+}

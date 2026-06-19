@@ -1,0 +1,65 @@
+{
+  "bellman_6_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9911160428871364,
+    "mean_regret": 0.5002746329947881,
+    "mean_success": 0.036,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "bellman_7_sweeps": {
+    "mean_portal_overestimate_ratio": 0.8838286825006701,
+    "mean_regret": 0.24575463747668216,
+    "mean_success": 0.035,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "bellman_8_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9536489261979161,
+    "mean_regret": 0.042561987972752034,
+    "mean_success": 0.03233333333333333,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "bellman_full": {
+    "mean_portal_overestimate_ratio": 0.9428645505285742,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "mc_all_goals": {
+    "mean_portal_overestimate_ratio": 0.9428645505285745,
+    "mean_regret": 0.056737844599437585,
+    "mean_success": 0.5555555555555556,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 0.8888888888888888
+  },
+  "mc_positive": {
+    "mean_portal_overestimate_ratio": 35.000000000000014,
+    "mean_regret": 0.26286375281474084,
+    "mean_success": 0.03444444444444445,
+    "portal_action_rate": 1.0,
+    "safe_action_rate": 0.0
+  },
+  "sto_trl_6_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9911160428871364,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "sto_trl_7_sweeps": {
+    "mean_portal_overestimate_ratio": 0.8838286825006701,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  },
+  "sto_trl_8_sweeps": {
+    "mean_portal_overestimate_ratio": 0.9536489261979161,
+    "mean_regret": 0.0,
+    "mean_success": 1.0,
+    "portal_action_rate": 0.0,
+    "safe_action_rate": 1.0
+  }
+}

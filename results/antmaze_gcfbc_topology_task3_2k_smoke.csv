@@ -1,0 +1,3 @@
+env,episodes_per_task,full_iters,gamma,gcfbc_batch_size,gcfbc_flow_steps,gcfbc_hidden_dims,gcfbc_layer_norm,gcfbc_lr,gcfbc_max_future,gcfbc_min_future,gcfbc_steps,goal_candidates_per_state,iters,method,min_jump_count,n_actions,n_states,overall_success,seed,task3_final_dist,task3_final_x,task3_final_y,task3_length,task3_success,task_ids,waypoint_lookahead
+antmaze-teleport-navigate-v0,1,180,0.995,512,3,"256,256,256",1,0.0003,30,1,2000,1,6,sto_trl_matched,20,4,45,0.0,0,35.70710926448497,-0.3282631484142918,21.638058171175523,1000.0,0.0,3,1
+antmaze-teleport-navigate-v0,1,180,0.995,512,3,"256,256,256",1,0.0003,30,1,2000,1,180,bellman_full,20,4,45,0.0,0,36.31283780820513,-0.8747755641446219,20.71337318332965,1000.0,0.0,3,1

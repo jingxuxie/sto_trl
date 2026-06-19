@@ -1,0 +1,16 @@
+action_bin_levels,action_gain,action_mode,action_scale,action_smoothing,action_threshold,cell_size,env,episodes_per_task,gamma,iters,method,n_edges,n_states,overall_success,polish_iters,proximity_weight,seed,task1_success,task2_success,task3_success,task4_success,task5_success,task_ids,transition_candidates,transition_k
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,bellman_matched,4598,565,0.16,0,0.02,0,0.0,0.0,0.26,0.3,0.24,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,bellman_matched,4598,565,0.13999999999999999,0,0.02,1,0.0,0.0,0.2,0.24,0.26,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,bellman_matched,4598,565,0.16799999999999998,0,0.02,2,0.0,0.0,0.24,0.36,0.24,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,bellman_matched,4598,565,0.196,0,0.02,3,0.0,0.0,0.3,0.4,0.28,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,bellman_matched,4598,565,0.176,0,0.02,4,0.0,0.0,0.38,0.34,0.16,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,sto_trl_matched,4598,565,0.164,0,0.02,0,0.0,0.34,0.26,0.0,0.22,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,sto_trl_matched,4598,565,0.132,0,0.02,1,0.0,0.26,0.2,0.0,0.2,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,sto_trl_matched,4598,565,0.11599999999999999,0,0.02,2,0.0,0.18,0.24,0.0,0.16,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,sto_trl_matched,4598,565,0.156,0,0.02,3,0.0,0.26,0.3,0.0,0.22,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,11,sto_trl_matched,4598,565,0.152,0,0.02,4,0.0,0.22,0.38,0.0,0.16,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,220,bellman_full,4598,565,0.076,0,0.02,0,0.0,0.08,0.26,0.0,0.04,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,220,bellman_full,4598,565,0.068,0,0.02,1,0.0,0.08,0.2,0.0,0.06,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,220,bellman_full,4598,565,0.072,0,0.02,2,0.0,0.08,0.24,0.0,0.04,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,220,bellman_full,4598,565,0.07999999999999999,0,0.02,3,0.0,0.04,0.3,0.0,0.06,all,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-stitch-v0,50,0.995,220,bellman_full,4598,565,0.092,0,0.02,4,0.0,0.04,0.38,0.0,0.04,all,256,5

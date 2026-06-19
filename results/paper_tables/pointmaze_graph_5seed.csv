@@ -1,0 +1,4 @@
+method,sweeps,executor,seed0_success,seed1_success,seed2_success,seed3_success,seed4_success,mean_success,std_success,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+Bellman matched,11,persistent_waypoint,0.220,0.200,0.200,0.264,0.196,0.216,0.025,0.000,0.000,0.388,0.428,0.264
+Stochastic TRL,11,persistent_waypoint,0.392,0.324,0.324,0.388,0.348,0.355,0.030,0.384,0.228,0.392,0.428,0.344
+Bellman full,220,persistent_waypoint,0.452,0.360,0.360,0.436,0.400,0.402,0.038,0.436,0.420,0.392,0.428,0.332

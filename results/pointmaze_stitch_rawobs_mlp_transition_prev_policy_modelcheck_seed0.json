@@ -1,0 +1,24 @@
+[
+  {
+    "method": "bellman_full",
+    "n": 1,
+    "success_mean": 0.9999691578783928,
+    "success_std": 0.0,
+    "task1_mean": 0.9999579147170142,
+    "task2_mean": 0.9999940560581903,
+    "task3_mean": 0.9999996730528162,
+    "task4_mean": 0.9999364194956779,
+    "task5_mean": 0.9999577260682655
+  },
+  {
+    "method": "sto_trl_matched",
+    "n": 1,
+    "success_mean": 0.9999691838015217,
+    "success_std": 0.0,
+    "task1_mean": 0.999958044332217,
+    "task2_mean": 0.9999940560581921,
+    "task3_mean": 0.999999673052816,
+    "task4_mean": 0.9999364194956799,
+    "task5_mean": 0.9999577260687034
+  }
+]

@@ -1,0 +1,7 @@
+method,n,success_rate,safe_action_rate,portal_action_rate,regret,portal_overestimate_ratio
+MC positive,6,0.051,0.000,1.000,0.358,20.000
+Realized TRL,6,0.051,0.000,1.000,0.358,20.000
+Log realized TRL,6,0.051,0.000,1.000,0.358,20.000
+Bellman matched,6,0.051,0.000,1.000,0.358,0.898
+Stochastic TRL,6,1.000,1.000,0.000,0.000,0.898
+Bellman full,6,1.000,1.000,0.000,0.000,0.898

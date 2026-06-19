@@ -1,0 +1,30 @@
+{
+  "bellman_8_sweeps": {
+    "mean_regret": 0.02085537410664849,
+    "mean_risky_overestimate_ratio": 0.8853163760950645,
+    "mean_success": 0.08166666666666667,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "mc_all_goals": {
+    "mean_regret": 0.06967570743998185,
+    "mean_risky_overestimate_ratio": 0.8851774872061758,
+    "mean_success": 0.04083333333333333,
+    "risky_opt_risky_action_rate": 0.8333333333333334,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "mc_positive": {
+    "mean_regret": 0.02085537410664849,
+    "mean_risky_overestimate_ratio": 21.248650793650793,
+    "mean_success": 0.08166666666666667,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "sto_trl_8_sweeps": {
+    "mean_regret": 0.001726270982225251,
+    "mean_risky_overestimate_ratio": 0.8853163760950645,
+    "mean_success": 0.6449999999999999,
+    "risky_opt_risky_action_rate": 0.8333333333333334,
+    "safe_opt_risky_action_rate": 0.0
+  }
+}

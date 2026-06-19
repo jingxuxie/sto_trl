@@ -1,0 +1,3 @@
+action_scale,env,episodes_per_task,eval_mode,eval_seconds,gamma,iters,max_episode_steps,method,model_max_steps,n_actions,n_states,overall_success,seed,task4_length,task4_success,task5_length,task5_success,task_ids,topology_source
+0.2,pointmaze-teleport-stitch-v0,1000,model,7.931441414984874,0.995,6,,bellman_matched,1000,4,45,0.473,0,510.473,0.491,546.782,0.455,"4,5",dataset
+0.2,pointmaze-teleport-stitch-v0,1000,model,0.43088324001291767,0.995,6,,sto_trl_matched,1000,4,45,1.0,0,25.0,1.0,27.0,1.0,"4,5",dataset

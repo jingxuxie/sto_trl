@@ -1,0 +1,5 @@
+executor,method,sweeps,mean_success,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+nearest_xy,Stochastic TRL,6,0.867,0.667,1.000,1.000,1.000,0.667
+nearest_xy,Bellman full,180,0.867,0.667,1.000,1.000,1.000,0.667
+body_nearest_k16,Stochastic TRL,6,1.000,1.000,1.000,1.000,1.000,1.000
+body_nearest_k16,Bellman full,180,1.000,1.000,1.000,1.000,1.000,1.000

@@ -1,0 +1,8 @@
+method,n,success_rate,regret,long_horizon_mse,safe_opt_risky_rate,risky_opt_risky_rate,risky_overestimate_ratio
+MC positive,27,0.436,0.315,0.09153,1.000,1.000,4.583
+MC all goals,27,0.896,0.057,0.00688,0.000,1.000,1.012
+Realized TRL,27,0.436,0.315,0.09151,1.000,1.000,4.583
+Log realized TRL,27,0.436,0.315,0.11951,1.000,1.000,4.583
+Bellman matched,27,0.436,0.315,0.45671,1.000,1.000,1.012
+Stochastic TRL,27,0.955,0.000,0.00005,0.000,1.000,1.012
+Bellman full,27,0.955,0.000,0.00005,0.000,1.000,1.012

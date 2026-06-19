@@ -1,0 +1,5 @@
+env,executor,eval_setting,controller_steps,matched_sweeps,full_sweeps,bellman_matched,stochastic_trl,bellman_full,sto_minus_matched,sto_equals_full
+pointmaze-teleport-navigate-v0,dataset topology scaffold,"5 eval seeds, 50 episodes/task",0,6,180,0.343,0.901,0.901,0.558,True
+pointmaze-teleport-stitch-v0,dataset topology scaffold,"5 eval seeds, 50 episodes/task",0,6,180,0.343,0.901,0.901,0.558,True
+antmaze-teleport-navigate-v0,full-goal BC + body-nearest k16,"3 eval seeds, 20 episodes/task",50000,6,180,0.310,0.947,0.947,0.637,True
+antmaze-teleport-stitch-v0,full-goal BC + body-nearest k16,"3 eval seeds, 20 episodes/task",20000,6,180,0.317,0.960,0.960,0.643,True

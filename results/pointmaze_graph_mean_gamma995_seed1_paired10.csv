@@ -1,0 +1,4 @@
+action_bin_levels,action_mode,action_scale,action_threshold,cell_size,env,gamma,iters,method,n_edges,n_states,overall_success,polish_iters,proximity_weight,seed,task1_success,task2_success,task3_success,task4_success,task5_success,transition_candidates,transition_k
+3,mean,0.2,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_polished,4197,554,0.3,40,0.02,1,0.4,0.3,0.3,0.3,0.2,256,5
+3,mean,0.2,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_polished,4197,554,0.48,40,0.02,1,0.4,0.4,0.5,0.6,0.5,256,5
+3,mean,0.2,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.26,0,0.02,1,0.3,0.5,0.0,0.3,0.2,256,5

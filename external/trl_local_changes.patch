@@ -1,0 +1,869 @@
+diff --git a/agents/__init__.py b/agents/__init__.py
+index 8a97d70..7421ae8 100644
+--- a/agents/__init__.py
++++ b/agents/__init__.py
+@@ -1,13 +1,27 @@
+ from agents.trl import TRLAgent
++from agents.trl_log import TRLLogAgent
++from agents.trl_log_mc import TRLLogMCAgent
++from agents.trl_log_relax_mc import TRLLogRelaxMCAgent
++from agents.trl_log_relax_neg import TRLLogRelaxNegAgent
++from agents.trl_log_relax_td import TRLLogRelaxTDAgent
++from agents.trl_log_relax_tdmax import TRLLogRelaxTDMaxAgent
+ from agents.crl import CRLAgent
+ from agents.qrl import QRLAgent
+ from agents.gcfbc import GCFBCAgent
++from agents.msebc import MSEBCAgent
+ from agents.gciql import GCIQLAgent
+ 
+ agents = dict(
+     trl=TRLAgent,
++    trl_log=TRLLogAgent,
++    trl_log_mc=TRLLogMCAgent,
++    trl_log_relax_mc=TRLLogRelaxMCAgent,
++    trl_log_relax_neg=TRLLogRelaxNegAgent,
++    trl_log_relax_td=TRLLogRelaxTDAgent,
++    trl_log_relax_tdmax=TRLLogRelaxTDMaxAgent,
+     crl=CRLAgent,
+     qrl=QRLAgent,
+     gcfbc=GCFBCAgent,
++    msebc=MSEBCAgent,
+     gciql=GCIQLAgent,
+ )
+diff --git a/agents/gcfbc.py b/agents/gcfbc.py
+index 0fe67bc..97bd312 100644
+--- a/agents/gcfbc.py
++++ b/agents/gcfbc.py
+@@ -71,7 +71,7 @@ class GCFBCAgent(flax.struct.PyTreeNode):
+         seed=None,
+         temperature=1.0,
+     ):
+-        actions = jax.random.normal(
++        actions = temperature * jax.random.normal(
+             seed,
+             (
+                 *observations.shape[:-1],
+diff --git a/agents/msebc.py b/agents/msebc.py
+new file mode 100644
+index 0000000..5c5cb72
+--- /dev/null
++++ b/agents/msebc.py
+@@ -0,0 +1,136 @@
++from typing import Any
++
++import flax
++import flax.linen as nn
++import jax
++import jax.numpy as jnp
++import ml_collections as mlc
++import optax
++
++from utils.flax_utils import ModuleDict, TrainState, nonpytree_field
++from utils.networks import MLP
++
++
++class MSEBCActor(nn.Module):
++    """Deterministic goal-conditioned actor trained with MSE behavior cloning."""
++
++    hidden_dims: tuple[int, ...]
++    action_dim: int
++    layer_norm: bool = False
++
++    @nn.compact
++    def __call__(self, observations, goals=None):
++        inputs = [observations]
++        if goals is not None:
++            inputs.append(goals)
++        x = jnp.concatenate(inputs, axis=-1)
++        x = MLP(self.hidden_dims, activate_final=True, layer_norm=self.layer_norm)(x)
++        return nn.Dense(self.action_dim)(x)
++
++
++class MSEBCAgent(flax.struct.PyTreeNode):
++    """Minimal deterministic MSE BC baseline for official TRL screens."""
++
++    rng: Any
++    network: Any
++    config: Any = nonpytree_field()
++
++    def actor_loss(self, batch, grad_params):
++        pred_actions = self.network.select("actor")(
++            batch["observations"],
++            batch["actor_goals"],
++            params=grad_params,
++        )
++        actor_loss = jnp.mean((pred_actions - batch["actions"]) ** 2)
++        return actor_loss, {
++            "actor_loss": actor_loss,
++            "mse": actor_loss,
++            "pred_action_abs_mean": jnp.mean(jnp.abs(pred_actions)),
++            "target_action_abs_mean": jnp.mean(jnp.abs(batch["actions"])),
++        }
++
++    @jax.jit
++    def total_loss(self, batch, grad_params, rng=None):
++        loss, actor_info = self.actor_loss(batch, grad_params)
++        info = {f"actor/{key}": value for key, value in actor_info.items()}
++        return loss, info
++
++    @jax.jit
++    def update(self, batch):
++        new_rng, rng = jax.random.split(self.rng)
++
++        def loss_fn(grad_params):
++            return self.total_loss(batch, grad_params, rng=rng)
++
++        new_network, info = self.network.apply_loss_fn(loss_fn=loss_fn)
++        return self.replace(network=new_network, rng=new_rng), info
++
++    @jax.jit
++    def sample_actions(
++        self,
++        observations,
++        goals=None,
++        seed=None,
++        temperature=1.0,
++    ):
++        del seed, temperature
++        actions = self.network.select("actor")(observations, goals)
++        return jnp.clip(actions, -1, 1)
++
++    @classmethod
++    def create(
++        cls,
++        seed,
++        example_batch,
++        config,
++    ):
++        rng = jax.random.PRNGKey(seed)
++        rng, init_rng = jax.random.split(rng, 2)
++
++        ex_observations = example_batch["observations"]
++        ex_actions = example_batch["actions"]
++        ex_goals = example_batch["actor_goals"]
++        action_dim = ex_actions.shape[-1]
++
++        actor_def = MSEBCActor(
++            hidden_dims=config["actor_hidden_dims"],
++            action_dim=action_dim,
++            layer_norm=config["layer_norm"],
++        )
++        network_def = ModuleDict({"actor": actor_def})
++        network_params = network_def.init(
++            init_rng,
++            actor=(ex_observations, ex_goals),
++        )["params"]
++        network = TrainState.create(
++            network_def,
++            network_params,
++            tx=optax.adam(learning_rate=config["lr"]),
++        )
++
++        config["action_dim"] = action_dim
++        return cls(rng, network=network, config=flax.core.FrozenDict(**config))
++
++
++def get_config():
++    config = mlc.ConfigDict(
++        dict(
++            agent_name="msebc",
++            lr=3e-4,
++            batch_size=1024,
++            actor_hidden_dims=(1024,) * 4,
++            layer_norm=True,
++            discount=0.999,
++            action_dim=mlc.config_dict.placeholder(int),
++            dataset=mlc.ConfigDict(
++                dict(
++                    dataset_class="GCDataset",
++                    actor_p_curgoal=0.0,
++                    actor_p_trajgoal=1.0,
++                    actor_p_randomgoal=0.0,
++                    actor_geom_sample=True,
++                )
++            ),
++        )
++    )
++    return config
+diff --git a/agents/trl_log.py b/agents/trl_log.py
+new file mode 100644
+index 0000000..ec7d6f5
+--- /dev/null
++++ b/agents/trl_log.py
+@@ -0,0 +1,122 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl import TRLAgent, get_config as get_trl_config
++
++
++class TRLLogAgent(TRLAgent):
++    """Log-space TRL critic.
++
++    The original TRL critic multiplies reachability probabilities and trains
++    with BCE. This variant trains log reachability directly:
++
++        log Q(s,a,g) <- log Q(s,a,w) + log Q(w,a_w,g)
++
++    It is numerically better behaved for long horizons and is the minimal
++    official-code bridge to the stochastic tabular prototype.
++    """
++
++    def _log_trl_components(self, batch, grad_params):
++        goal_key = (
++            "value_goal_observations"
++            if self.config["oracle_distill"]
++            else "value_goals"
++        )
++        q_logits = self.network.select("critic")(
++            batch["observations"],
++            goals=batch[goal_key],
++            actions=batch["actions"],
++            params=grad_params,
++        )
++        pred_z = jax.nn.log_sigmoid(q_logits)
++        qs = jax.nn.sigmoid(q_logits)
++
++        midpoint_goal_key = (
++            "value_midpoint_observations"
++            if self.config["oracle_distill"]
++            else "value_midpoint_goals"
++        )
++        log_discount = jnp.log(self.config["discount"])
++
++        first_q_logits = self.network.select("target_critic")(
++            batch["observations"],
++            goals=batch[midpoint_goal_key],
++            actions=batch["actions"],
++        )
++        first_z = jnp.where(
++            (batch["value_midpoint_offsets"] <= 1)[None, ...],
++            batch["value_midpoint_offsets"][None, ...] * log_discount,
++            jax.nn.log_sigmoid(first_q_logits),
++        )
++        first_z = jnp.clip(first_z, self.config["log_min"], 0.0)
++
++        second_q_logits = self.network.select("target_critic")(
++            batch["value_midpoint_observations"],
++            goals=batch[goal_key],
++            actions=batch["value_midpoint_actions"],
++        )
++        second_offset = (
++            batch["value_offsets"][None, ...] - batch["value_midpoint_offsets"]
++        )
++        second_z = jnp.where(
++            (second_offset <= 1)[None, ...],
++            second_offset * log_discount,
++            jax.nn.log_sigmoid(second_q_logits),
++        )
++        second_z = jnp.clip(second_z, self.config["log_min"], 0.0)
++        target_z = jax.lax.stop_gradient(
++            jnp.clip(first_z + second_z, self.config["log_min"], 0.0)
++        )
++
++        expectile_weight = jnp.where(
++            target_z >= pred_z,
++            self.config["expectile"],
++            (1 - self.config["expectile"]),
++        )
++        dist = jax.lax.stop_gradient(target_z / log_discount)
++        dist_weight = (1 / (1 + dist)) ** self.config["lam"]
++        tr_loss = (
++            expectile_weight
++            * dist_weight
++            * optax.huber_loss(pred_z, target_z, delta=self.config["log_huber_delta"])
++        )
++        return goal_key, q_logits, pred_z, qs, target_z, tr_loss
++
++    def _oracle_distill_loss(self, batch, grad_params, qs):
++        if not self.config["oracle_distill"]:
++            return 0.0
++        distill_q_logits = self.network.select("oracle_critic")(
++            batch["observations"],
++            goals=batch["value_goals"],
++            actions=batch["actions"],
++            params=grad_params,
++        )
++        return self.bce_loss(distill_q_logits, jax.lax.stop_gradient(qs)).mean()
++
++    def critic_loss(self, batch, grad_params):
++        _goal_key, _q_logits, pred_z, qs, target_z, tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++        q_loss = tr_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = q_loss + distill_loss
++
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": q_loss,
++            "distill_loss": distill_loss,
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++        }
++
++
++def get_config():
++    config = get_trl_config()
++    config["agent_name"] = "trl_log"
++    config["log_huber_delta"] = 1.0
++    config["log_min"] = -80.0
++    return config
+diff --git a/agents/trl_log_mc.py b/agents/trl_log_mc.py
+new file mode 100644
+index 0000000..ad3557c
+--- /dev/null
++++ b/agents/trl_log_mc.py
+@@ -0,0 +1,53 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl_log import TRLLogAgent, get_config as get_trl_log_config
++
++
++class TRLLogMCAgent(TRLLogAgent):
++    """Log-space TRL with an on-trajectory MC anchor.
++
++    This is the fast bridge variant from the project plan. It is not the final
++    stochastic algorithm because the MC target still treats realized lucky paths
++    as reliable, but it separates log-space stability from transitive recursion.
++    """
++
++    def critic_loss(self, batch, grad_params):
++        _goal_key, _q_logits, pred_z, qs, target_z, tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++        mc_target_z = jax.lax.stop_gradient(
++            jnp.clip(
++                batch["value_offsets"][None, ...] * jnp.log(self.config["discount"]),
++                self.config["log_min"],
++                0.0,
++            )
++        )
++        mc_loss = optax.huber_loss(
++            pred_z, mc_target_z, delta=self.config["log_huber_delta"]
++        )
++        q_loss = tr_loss.mean()
++        mc_loss_mean = mc_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = q_loss + self.config["mc_alpha"] * mc_loss_mean + distill_loss
++
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": q_loss,
++            "mc_loss": mc_loss_mean,
++            "distill_loss": distill_loss,
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "z_mc_target_mean": mc_target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++        }
++
++
++def get_config():
++    config = get_trl_log_config()
++    config["agent_name"] = "trl_log_mc"
++    config["mc_alpha"] = 0.1
++    return config
+diff --git a/agents/trl_log_relax_mc.py b/agents/trl_log_relax_mc.py
+new file mode 100644
+index 0000000..1e7ab35
+--- /dev/null
++++ b/agents/trl_log_relax_mc.py
+@@ -0,0 +1,69 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl_log import TRLLogAgent, get_config as get_trl_log_config
++
++
++class TRLLogRelaxMCAgent(TRLLogAgent):
++    """MC-calibrated one-sided log-space transitive relaxation.
++
++    A symmetric regression to sampled midpoint targets can collapse log values
++    when many sampled midpoints are poor. This variant treats transitive
++    composition as a path relaxation: only midpoint targets with higher
++    reachability than the current prediction update the critic upward. The MC
++    term anchors the scale on realized future states.
++    """
++
++    def critic_loss(self, batch, grad_params):
++        _goal_key, _q_logits, pred_z, qs, target_z, _tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++        improve = jax.lax.stop_gradient(target_z > pred_z)
++        tr_loss = jnp.where(
++            improve,
++            optax.huber_loss(pred_z, target_z, delta=self.config["log_huber_delta"]),
++            0.0,
++        )
++
++        mc_target_z = jax.lax.stop_gradient(
++            jnp.clip(
++                batch["value_offsets"][None, ...] * jnp.log(self.config["discount"]),
++                self.config["log_min"],
++                0.0,
++            )
++        )
++        mc_loss = optax.huber_loss(
++            pred_z, mc_target_z, delta=self.config["log_huber_delta"]
++        )
++        tr_loss_mean = tr_loss.mean()
++        mc_loss_mean = mc_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = (
++            self.config["tr_alpha"] * tr_loss_mean
++            + self.config["mc_alpha"] * mc_loss_mean
++            + distill_loss
++        )
++
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": tr_loss_mean,
++            "mc_loss": mc_loss_mean,
++            "distill_loss": distill_loss,
++            "improve_frac": improve.mean(),
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "z_mc_target_mean": mc_target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++        }
++
++
++def get_config():
++    config = get_trl_log_config()
++    config["agent_name"] = "trl_log_relax_mc"
++    config["mc_alpha"] = 1.0
++    config["tr_alpha"] = 1.0
++    return config
++
+diff --git a/agents/trl_log_relax_neg.py b/agents/trl_log_relax_neg.py
+new file mode 100644
+index 0000000..a2acd9b
+--- /dev/null
++++ b/agents/trl_log_relax_neg.py
+@@ -0,0 +1,84 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl_log import get_config as get_trl_log_config
++from agents.trl_log_relax_mc import TRLLogRelaxMCAgent
++
++
++class TRLLogRelaxNegAgent(TRLLogRelaxMCAgent):
++    """One-sided log TRL with MC positives and random-goal negatives."""
++
++    def critic_loss(self, batch, grad_params):
++        _goal_key, _q_logits, pred_z, qs, target_z, _tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++        improve = jax.lax.stop_gradient(target_z > pred_z)
++        tr_loss = jnp.where(
++            improve,
++            optax.huber_loss(pred_z, target_z, delta=self.config["log_huber_delta"]),
++            0.0,
++        )
++
++        mc_target_z = jax.lax.stop_gradient(
++            jnp.clip(
++                batch["value_offsets"][None, ...] * jnp.log(self.config["discount"]),
++                self.config["log_min"],
++                0.0,
++            )
++        )
++        mc_loss = optax.huber_loss(
++            pred_z, mc_target_z, delta=self.config["log_huber_delta"]
++        )
++
++        random_goal_key = (
++            "value_random_goal_observations"
++            if self.config["oracle_distill"]
++            else "value_random_goals"
++        )
++        neg_logits = self.network.select("critic")(
++            batch["observations"],
++            goals=batch[random_goal_key],
++            actions=batch["actions"],
++            params=grad_params,
++        )
++        neg_loss = optax.sigmoid_binary_cross_entropy(
++            neg_logits, jnp.zeros_like(neg_logits)
++        )
++        neg_qs = jax.nn.sigmoid(neg_logits)
++
++        tr_loss_mean = tr_loss.mean()
++        mc_loss_mean = mc_loss.mean()
++        neg_loss_mean = neg_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = (
++            self.config["tr_alpha"] * tr_loss_mean
++            + self.config["mc_alpha"] * mc_loss_mean
++            + self.config["neg_alpha"] * neg_loss_mean
++            + distill_loss
++        )
++
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": tr_loss_mean,
++            "mc_loss": mc_loss_mean,
++            "neg_loss": neg_loss_mean,
++            "distill_loss": distill_loss,
++            "improve_frac": improve.mean(),
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "z_mc_target_mean": mc_target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++            "neg_q_mean": neg_qs.mean(),
++        }
++
++
++def get_config():
++    config = get_trl_log_config()
++    config["agent_name"] = "trl_log_relax_neg"
++    config["mc_alpha"] = 1.0
++    config["tr_alpha"] = 1.0
++    config["neg_alpha"] = 0.1
++    return config
+diff --git a/agents/trl_log_relax_td.py b/agents/trl_log_relax_td.py
+new file mode 100644
+index 0000000..2fad0e4
+--- /dev/null
++++ b/agents/trl_log_relax_td.py
+@@ -0,0 +1,93 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl_log import TRLLogAgent, get_config as get_trl_log_config
++
++
++class TRLLogRelaxTDAgent(TRLLogAgent):
++    """One-sided log transitive relaxation with stochastic one-step TD.
++
++    The transitive term only lifts predictions when a sampled midpoint gives a
++    better composed path. The TD term is symmetric in probability space so
++    stochastic next-state samples average to a Bellman expectation instead of
++    averaging log probabilities.
++    """
++
++    def critic_loss(self, batch, grad_params):
++        goal_key, _q_logits, pred_z, qs, target_z, _tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++
++        improve = jax.lax.stop_gradient(target_z > pred_z)
++        tr_loss = jnp.where(
++            improve,
++            optax.huber_loss(pred_z, target_z, delta=self.config["log_huber_delta"]),
++            0.0,
++        )
++
++        log_discount = jnp.log(self.config["discount"])
++        mc_target_z = jax.lax.stop_gradient(
++            jnp.clip(
++                batch["value_offsets"][None, ...] * log_discount,
++                self.config["log_min"],
++                0.0,
++            )
++        )
++        mc_loss = optax.huber_loss(
++            pred_z, mc_target_z, delta=self.config["log_huber_delta"]
++        )
++
++        next_q_logits = self.network.select("target_critic")(
++            batch["next_observations"],
++            goals=batch[goal_key],
++            actions=batch["next_actions"],
++        )
++        td_target_q = self.config["discount"] * jax.nn.sigmoid(next_q_logits)
++        one_step_q = self.config["discount"] ** batch["value_offsets"][None, ...]
++        td_target_q = jnp.where(
++            (batch["value_offsets"] <= 1)[None, ...],
++            one_step_q,
++            td_target_q,
++        )
++        td_target_q = jax.lax.stop_gradient(jnp.clip(td_target_q, 1e-8, 1.0))
++        td_loss = optax.huber_loss(
++            qs, td_target_q, delta=self.config["td_huber_delta"]
++        )
++
++        tr_loss_mean = tr_loss.mean()
++        mc_loss_mean = mc_loss.mean()
++        td_loss_mean = td_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = (
++            self.config["tr_alpha"] * tr_loss_mean
++            + self.config["mc_alpha"] * mc_loss_mean
++            + self.config["td_alpha"] * td_loss_mean
++            + distill_loss
++        )
++
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": tr_loss_mean,
++            "mc_loss": mc_loss_mean,
++            "td_loss": td_loss_mean,
++            "distill_loss": distill_loss,
++            "improve_frac": improve.mean(),
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "z_mc_target_mean": mc_target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_td_target_mean": td_target_q.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++        }
++
++
++def get_config():
++    config = get_trl_log_config()
++    config["agent_name"] = "trl_log_relax_td"
++    config["mc_alpha"] = 0.2
++    config["tr_alpha"] = 1.0
++    config["td_alpha"] = 1.0
++    config["td_huber_delta"] = 0.1
++    return config
+diff --git a/agents/trl_log_relax_tdmax.py b/agents/trl_log_relax_tdmax.py
+new file mode 100644
+index 0000000..24d1f66
+--- /dev/null
++++ b/agents/trl_log_relax_tdmax.py
+@@ -0,0 +1,131 @@
++import jax
++import jax.numpy as jnp
++import optax
++
++from agents.trl_log import TRLLogAgent, get_config as get_trl_log_config
++
++
++class TRLLogRelaxTDMaxAgent(TRLLogAgent):
++    """Log-space path relaxation with a stochastic Bellman action-max target.
++
++    This is a closer neural analogue of the tabular stochastic backup:
++
++        Q(s, a, g) <- E[s'|s,a] gamma max_a' Q(s', a', g)
++
++    The expectation is represented by sampled dataset next states, while the
++    max is approximated by comparing the dataset next action with a
++    deterministic actor-generated candidate.
++    """
++
++    def _actor_candidate_actions(self, batch, goal_key):
++        pe_type = self.config["pe_type"]
++        if pe_type == "frs":
++            action = jnp.zeros_like(batch["actions"])
++            flow_steps = self.config["frs"]["flow_steps"]
++            for i in range(flow_steps):
++                t = jnp.full((batch["actions"].shape[0], 1), i / flow_steps)
++                vels = self.network.select("actor")(
++                    batch["next_observations"], batch[goal_key], action, t
++                )
++                action = action + vels / flow_steps
++            return jnp.clip(action, -1, 1)
++
++        if pe_type == "rpg":
++            dist = self.network.select("actor")(
++                batch["next_observations"], batch[goal_key]
++            )
++            return jnp.clip(dist.mode(), -1, 1)
++
++        return batch["next_actions"]
++
++    def critic_loss(self, batch, grad_params):
++        goal_key, _q_logits, pred_z, qs, target_z, _tr_loss = self._log_trl_components(
++            batch, grad_params
++        )
++
++        improve = jax.lax.stop_gradient(target_z > pred_z)
++        tr_loss = jnp.where(
++            improve,
++            optax.huber_loss(pred_z, target_z, delta=self.config["log_huber_delta"]),
++            0.0,
++        )
++
++        log_discount = jnp.log(self.config["discount"])
++        mc_target_z = jax.lax.stop_gradient(
++            jnp.clip(
++                batch["value_offsets"][None, ...] * log_discount,
++                self.config["log_min"],
++                0.0,
++            )
++        )
++        mc_loss = optax.huber_loss(
++            pred_z, mc_target_z, delta=self.config["log_huber_delta"]
++        )
++
++        behavior_logits = self.network.select("target_critic")(
++            batch["next_observations"],
++            goals=batch[goal_key],
++            actions=batch["next_actions"],
++        )
++        actor_actions = self._actor_candidate_actions(batch, goal_key)
++        actor_logits = self.network.select("target_critic")(
++            batch["next_observations"],
++            goals=batch[goal_key],
++            actions=actor_actions,
++        )
++        behavior_q = jax.nn.sigmoid(behavior_logits)
++        actor_q = jax.nn.sigmoid(actor_logits)
++        max_next_q = jnp.maximum(behavior_q, actor_q)
++
++        td_target_q = self.config["discount"] * max_next_q
++        one_step_q = self.config["discount"] ** batch["value_offsets"][None, ...]
++        td_target_q = jnp.where(
++            (batch["value_offsets"] <= 1)[None, ...],
++            one_step_q,
++            td_target_q,
++        )
++        td_target_q = jax.lax.stop_gradient(jnp.clip(td_target_q, 1e-8, 1.0))
++        td_loss = optax.huber_loss(
++            qs, td_target_q, delta=self.config["td_huber_delta"]
++        )
++
++        tr_loss_mean = tr_loss.mean()
++        mc_loss_mean = mc_loss.mean()
++        td_loss_mean = td_loss.mean()
++        distill_loss = self._oracle_distill_loss(batch, grad_params, qs)
++        total_loss = (
++            self.config["tr_alpha"] * tr_loss_mean
++            + self.config["mc_alpha"] * mc_loss_mean
++            + self.config["td_alpha"] * td_loss_mean
++            + distill_loss
++        )
++
++        actor_better = jax.lax.stop_gradient(actor_q > behavior_q)
++        return total_loss, {
++            "total_loss": total_loss,
++            "q_loss": tr_loss_mean,
++            "mc_loss": mc_loss_mean,
++            "td_loss": td_loss_mean,
++            "distill_loss": distill_loss,
++            "improve_frac": improve.mean(),
++            "actor_better_frac": actor_better.mean(),
++            "z_mean": pred_z.mean(),
++            "z_target_mean": target_z.mean(),
++            "z_mc_target_mean": mc_target_z.mean(),
++            "q_mean": qs.mean(),
++            "q_behavior_target_mean": behavior_q.mean(),
++            "q_actor_target_mean": actor_q.mean(),
++            "q_td_target_mean": td_target_q.mean(),
++            "q_max": qs.max(),
++            "q_min": qs.min(),
++        }
++
++
++def get_config():
++    config = get_trl_log_config()
++    config["agent_name"] = "trl_log_relax_tdmax"
++    config["mc_alpha"] = 0.2
++    config["tr_alpha"] = 1.0
++    config["td_alpha"] = 1.0
++    config["td_huber_delta"] = 0.1
++    return config
+diff --git a/main.py b/main.py
+index eb9c1cf..f7042fe 100644
+--- a/main.py
++++ b/main.py
+@@ -27,6 +27,7 @@ from utils.log_utils import (
+ FLAGS = flags.FLAGS
+ 
+ flags.DEFINE_string("run_group", "Debug", "Run group.")
++flags.DEFINE_string("wandb_mode", "online", "W&B mode: online, offline, or disabled.")
+ flags.DEFINE_integer("seed", 0, "Random seed.")
+ flags.DEFINE_string(
+     "env_name", "scene-play-oraclerep-v0", "Environment (dataset) name."
+@@ -44,6 +45,7 @@ flags.DEFINE_integer("eval_interval", 250000, "Evaluation interval.")
+ flags.DEFINE_integer("save_interval", 5000000, "Saving interval.")
+ 
+ flags.DEFINE_integer("eval_episodes", 15, "Number of episodes for each task.")
++flags.DEFINE_boolean("eval_at_start", True, "Whether to evaluate at step 1.")
+ flags.DEFINE_float("eval_temperature", 0, "Actor temperature for evaluation.")
+ flags.DEFINE_float("eval_gaussian", None, "Action Gaussian noise for evaluation.")
+ flags.DEFINE_integer("video_episodes", 1, "Number of video episodes for each task.")
+@@ -54,7 +56,9 @@ config_flags.DEFINE_config_file("agent", "agents/mrl.py", lock_config=False)
+ 
+ def main(_):
+     exp_name = get_exp_name(FLAGS.seed)
+-    setup_wandb(project="mrl", group=FLAGS.run_group, name=exp_name)
++    setup_wandb(
++        project="mrl", group=FLAGS.run_group, name=exp_name, mode=FLAGS.wandb_mode
++    )
+ 
+     FLAGS.save_dir = os.path.join(
+         FLAGS.save_dir, wandb.run.project, FLAGS.run_group, exp_name
+@@ -128,7 +132,10 @@ def main(_):
+             wandb.log(train_metrics, step=i)
+             train_logger.log(train_metrics, step=i)
+ 
+-        if FLAGS.eval_interval != 0 and (i == 1 or i % FLAGS.eval_interval == 0):
++        should_eval = FLAGS.eval_interval != 0 and (
++            (FLAGS.eval_at_start and i == 1) or i % FLAGS.eval_interval == 0
++        )
++        if should_eval:
+             renders = []
+             eval_metrics = {}
+             overall_metrics = defaultdict(list)
+diff --git a/utils/datasets.py b/utils/datasets.py
+index 21b69ae..566a453 100644
+--- a/utils/datasets.py
++++ b/utils/datasets.py
+@@ -189,7 +189,15 @@ class GCDataset:
+ 
+         final_state_idxs = self.terminal_locs[np.searchsorted(self.terminal_locs, idxs)]
+ 
+-        if self.config.get("agent_name") in ["trl"]:
++        if self.config.get("agent_name") in [
++            "trl",
++            "trl_log",
++            "trl_log_mc",
++            "trl_log_relax_mc",
++            "trl_log_relax_neg",
++            "trl_log_relax_td",
++            "trl_log_relax_tdmax",
++        ]:
+             assert (idxs != final_state_idxs).all() and (idxs != value_goal_idxs).all()
+ 
+             value_middle_goal_idxs = np.random.randint(idxs, value_goal_idxs)
+@@ -203,6 +211,7 @@ class GCDataset:
+                 value_middle_goal_idxs
+             ]
+             batch["next_actions"] = self.dataset["actions"][idxs + 1]
++            value_random_goal_idxs = self.dataset.get_random_idxs(batch_size)
+ 
+             if "oracle_reps" in self.dataset:
+                 batch["value_midpoint_goals"] = self.dataset["oracle_reps"][
+@@ -210,12 +219,21 @@ class GCDataset:
+                 ]
+                 batch["value_cur_goals"] = self.dataset["oracle_reps"][idxs]
+                 batch["value_next_goals"] = self.dataset["oracle_reps"][idxs + 1]
++                batch["value_random_goals"] = self.dataset["oracle_reps"][
++                    value_random_goal_idxs
++                ]
+             else:
+                 batch["value_midpoint_goals"] = self.get_observations(
+                     value_middle_goal_idxs
+                 )
+                 batch["value_cur_goals"] = self.get_observations(idxs)
+                 batch["value_next_goals"] = self.get_observations(idxs + 1)
++                batch["value_random_goals"] = self.get_observations(
++                    value_random_goal_idxs
++                )
++            batch["value_random_goal_observations"] = self.get_observations(
++                value_random_goal_idxs
++            )
+ 
+         return batch
+ 

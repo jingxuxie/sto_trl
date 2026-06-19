@@ -1,0 +1,6 @@
+task,bellman_matched,sto_trl,bellman_full,sto_minus_matched,full_minus_sto
+task1,0.000,0.384,0.436,0.384,0.052
+task2,0.000,0.228,0.420,0.228,0.192
+task3,0.388,0.392,0.392,0.004,0.000
+task4,0.428,0.428,0.428,0.000,0.000
+task5,0.264,0.344,0.332,0.080,-0.012

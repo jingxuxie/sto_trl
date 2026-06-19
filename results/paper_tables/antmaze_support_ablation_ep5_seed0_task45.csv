@@ -1,0 +1,3 @@
+env,controller,eval_setting,matched_sweeps,full_sweeps,bellman_matched,support_trl,stochastic_trl,bellman_full,support_minus_matched,sto_minus_support,sto_eval_seconds,source
+antmaze-teleport-navigate-v0,50k full-goal BC + body-nearest k16,"seed 0, tasks 4,5, 5 episodes/task",6,180,0.400,0.400,0.900,0.900,0.000,0.500,4.80,results/antmaze_navigate_support_ablation_ep5_seed0_task45.csv
+antmaze-teleport-stitch-v0,20k full-goal BC + body-nearest k16,"seed 0, tasks 4,5, 5 episodes/task",6,180,0.600,0.600,0.900,1.000,0.000,0.300,4.99,results/antmaze_stitch_support_ablation_ep5_seed0_task45.csv

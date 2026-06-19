@@ -1,0 +1,2 @@
+action_mode,candidates,direction_weight,env,episodes_per_task,full_iters,gamma,iters,method,min_jump_count,n_actions,n_states,overall_success,replay_horizon,seed,state_weight,target_weight,task3_success,task_ids,temperature,top_k
+direction_knn,512,2.0,antmaze-teleport-navigate-v0,1,180,0.995,6,sto_trl_matched,20,4,45,0.0,10,0,1.0,0.15,0.0,3,0.0,1

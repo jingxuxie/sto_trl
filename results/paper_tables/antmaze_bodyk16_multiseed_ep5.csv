@@ -1,0 +1,7 @@
+env,episodes_per_task,eval_seeds,controller_steps,method,sweeps,mean_success,success_std,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+antmaze-teleport-navigate-v0,5,3,50000,Bellman matched,6,0.347,0.068,0.000,0.467,0.467,0.533,0.267
+antmaze-teleport-navigate-v0,5,3,50000,Stochastic TRL,6,0.893,0.019,0.867,0.933,0.933,0.933,0.800
+antmaze-teleport-navigate-v0,5,3,50000,Bellman full,180,0.893,0.019,0.867,0.933,0.933,0.933,0.800
+antmaze-teleport-stitch-v0,5,3,20000,Bellman matched,6,0.333,0.075,0.000,0.400,0.467,0.533,0.267
+antmaze-teleport-stitch-v0,5,3,20000,Stochastic TRL,6,0.907,0.038,0.867,0.933,1.000,0.800,0.933
+antmaze-teleport-stitch-v0,5,3,20000,Bellman full,180,0.907,0.038,0.867,0.933,1.000,0.800,0.933

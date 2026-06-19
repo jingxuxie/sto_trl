@@ -1,0 +1,15 @@
+env,planner,sweeps,mean_success,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+antmaze-teleport-navigate-v0,Bellman,6,0.333,0.000,0.000,0.333,0.667,0.667
+antmaze-teleport-navigate-v0,Stochastic TRL,6,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-navigate-v0,Bellman,12,0.667,0.667,1.000,0.333,0.667,0.667
+antmaze-teleport-navigate-v0,Bellman,24,0.933,1.000,1.000,1.000,1.000,0.667
+antmaze-teleport-navigate-v0,Bellman,45,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-navigate-v0,Bellman,90,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-navigate-v0,Bellman full,180,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-stitch-v0,Bellman,6,0.333,0.000,0.000,0.333,0.667,0.667
+antmaze-teleport-stitch-v0,Stochastic TRL,6,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-stitch-v0,Bellman,12,0.667,0.667,1.000,0.333,0.667,0.667
+antmaze-teleport-stitch-v0,Bellman,24,0.933,1.000,1.000,1.000,1.000,0.667
+antmaze-teleport-stitch-v0,Bellman,45,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-stitch-v0,Bellman,90,1.000,1.000,1.000,1.000,1.000,1.000
+antmaze-teleport-stitch-v0,Bellman full,180,1.000,1.000,1.000,1.000,1.000,1.000

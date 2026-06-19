@@ -1,0 +1,7 @@
+env,executor,episodes_per_task,controller_steps,method,sweeps,mean_success,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+pointmaze-teleport-stitch-v0,topology_proportional,10,0,Bellman matched,6,0.38,0.0,0.5,0.6,0.4,0.4
+pointmaze-teleport-stitch-v0,topology_proportional,10,0,Stochastic TRL,6,0.98,0.9,1.0,1.0,1.0,1.0
+pointmaze-teleport-stitch-v0,topology_proportional,10,0,Bellman full,180,0.98,0.9,1.0,1.0,1.0,1.0
+antmaze-teleport-stitch-v0,full_obs_bc_bodyk16,10,20000,Bellman matched,6,0.38,0.0,0.5,0.6,0.4,0.4
+antmaze-teleport-stitch-v0,full_obs_bc_bodyk16,10,20000,Stochastic TRL,6,0.9400000000000001,1.0,0.9,1.0,1.0,0.8
+antmaze-teleport-stitch-v0,full_obs_bc_bodyk16,10,20000,Bellman full,180,0.96,1.0,0.9,1.0,1.0,0.9

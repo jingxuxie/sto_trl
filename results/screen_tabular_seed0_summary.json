@@ -1,0 +1,65 @@
+{
+  "bellman_4_sweeps": {
+    "mean_regret": 0.43458968924845204,
+    "mean_risky_overestimate_ratio": 0.9511494252873564,
+    "mean_success": 0.45,
+    "risky_opt_risky_action_rate": null,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "bellman_5_sweeps": {
+    "mean_regret": 0.32246514706166374,
+    "mean_risky_overestimate_ratio": 1.002938034188034,
+    "mean_success": 0.408,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "bellman_full": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 0.9770437297376952,
+    "mean_success": 0.9620000000000001,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "mc_all_goals": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 0.9767871352785115,
+    "mean_success": 0.9620000000000001,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "mc_positive": {
+    "mean_regret": 0.3785274181550579,
+    "mean_risky_overestimate_ratio": 4.581751512365924,
+    "mean_success": 0.429,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "sto_trl_4_sweeps": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 0.9511494252873564,
+    "mean_success": 1.0,
+    "risky_opt_risky_action_rate": null,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "sto_trl_5_sweeps": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 1.002938034188034,
+    "mean_success": 0.924,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "trl_log_realized": {
+    "mean_regret": 0.3785274181550579,
+    "mean_risky_overestimate_ratio": 4.583333333333333,
+    "mean_success": 0.429,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "trl_raw_realized": {
+    "mean_regret": 0.3785274181550579,
+    "mean_risky_overestimate_ratio": 4.583333333333333,
+    "mean_success": 0.429,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  }
+}

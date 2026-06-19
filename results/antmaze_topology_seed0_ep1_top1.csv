@@ -1,0 +1,4 @@
+action_mode,candidates,direction_weight,env,episodes_per_task,full_iters,gamma,iters,method,n_actions,n_states,overall_success,seed,state_weight,target_weight,task1_success,task2_success,task3_success,task4_success,task5_success,task_ids,temperature,top_k
+direction_knn,512,2.0,antmaze-teleport-navigate-v0,1,180,0.995,6,bellman_matched,4,45,0.4,0,1.0,0.15,1.0,0.0,1.0,0.0,0.0,all,0.0,1
+direction_knn,512,2.0,antmaze-teleport-navigate-v0,1,180,0.995,6,sto_trl_matched,4,45,0.2,0,1.0,0.15,0.0,0.0,1.0,0.0,0.0,all,0.0,1
+direction_knn,512,2.0,antmaze-teleport-navigate-v0,1,180,0.995,180,bellman_full,4,45,0.2,0,1.0,0.15,0.0,0.0,1.0,0.0,0.0,all,0.0,1

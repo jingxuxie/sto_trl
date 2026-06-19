@@ -1,0 +1,4 @@
+method,sweeps,n,mean_success,task1_mean,task2_mean,task3_mean,task4_mean,task5_mean
+Bellman matched,6,1,0.3333333333333333,0.0,0.0,0.3333333333333333,0.6666666666666666,0.6666666666666666
+Stochastic TRL,6,1,1.0,1.0,1.0,1.0,1.0,1.0
+Bellman full,180,1,1.0,1.0,1.0,1.0,1.0,1.0

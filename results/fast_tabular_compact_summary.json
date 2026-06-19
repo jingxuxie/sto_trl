@@ -1,0 +1,79 @@
+{
+  "bellman_4_sweeps": {
+    "mean_regret": 0.43458968924845204,
+    "mean_risky_overestimate_ratio": 0.9588957627750732,
+    "mean_success": 0.44266666666666665,
+    "risky_opt_risky_action_rate": null,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "bellman_5_sweeps": {
+    "mean_regret": 0.32246514706166374,
+    "mean_risky_overestimate_ratio": 1.034979703868309,
+    "mean_success": 0.4351111111111111,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "bellman_6_sweeps": {
+    "mean_regret": 0.1891887602232616,
+    "mean_risky_overestimate_ratio": 1.042058083040378,
+    "mean_success": 0.42933333333333334,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "bellman_full": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 1.0119778498945868,
+    "mean_success": 0.9554074074074074,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "mc_all_goals": {
+    "mean_regret": 0.05691259259259259,
+    "mean_risky_overestimate_ratio": 1.0117799012727984,
+    "mean_success": 0.896074074074074,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "mc_positive": {
+    "mean_regret": 0.3154145321777924,
+    "mean_risky_overestimate_ratio": 4.582521524018759,
+    "mean_success": 0.4357037037037037,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "sto_trl_4_sweeps": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 0.9588957627750732,
+    "mean_success": 1.0,
+    "risky_opt_risky_action_rate": null,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "sto_trl_5_sweeps": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 1.034979703868309,
+    "mean_success": 0.9348888888888889,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "sto_trl_6_sweeps": {
+    "mean_regret": 0.0,
+    "mean_risky_overestimate_ratio": 1.042058083040378,
+    "mean_success": 0.9313333333333333,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 0.0
+  },
+  "trl_log_realized": {
+    "mean_regret": 0.3154145321777924,
+    "mean_risky_overestimate_ratio": 4.583333333333333,
+    "mean_success": 0.4357037037037037,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  },
+  "trl_raw_realized": {
+    "mean_regret": 0.3154145321777924,
+    "mean_risky_overestimate_ratio": 4.583333333333333,
+    "mean_success": 0.4357037037037037,
+    "risky_opt_risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0
+  }
+}

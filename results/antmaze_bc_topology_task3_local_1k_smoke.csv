@@ -1,0 +1,2 @@
+bc_batch_size,bc_hidden_dims,bc_layer_norm,bc_lr,bc_max_future,bc_min_future,bc_rel_scale,bc_steps,env,episodes_per_task,full_iters,gamma,iters,method,min_jump_count,n_actions,n_states,overall_success,seed,task3_final_dist,task3_final_x,task3_final_y,task3_length,task3_success,task_ids,waypoint_lookahead
+1024,"256,256,256",1,0.0003,30,1,9.896982192993164,1000,antmaze-teleport-navigate-v0,1,180,0.995,6,sto_trl_matched,20,4,45,0.0,0,8.326060342550727,27.005388596820175,23.316826275741434,1000.0,0.0,3,1

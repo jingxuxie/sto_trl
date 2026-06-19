@@ -1,0 +1,2 @@
+env,task_id,eval_setting,matched_sweeps,full_sweeps,bellman_matched,stochastic_trl,bellman_full,sto_minus_matched,sto_equals_full,source
+pointmaze-teleport-stitch-v0,5,"5 eval seeds, 100 episodes",6,180,0.380,0.908,0.908,0.528,True,results/pointmaze_stitch_task5_ep100_seed01234.csv

@@ -1,0 +1,5 @@
+execution_path,env,controller_or_actor,eval_setting,best_success,final_success,source
+GCFBC direct final-goal actor,pointmaze-teleport-navigate-v0,"GCFBC 128,128","seed 0, 5 episodes/task",0.080,0.000,results/ogbench_screen_exp/dummy/pointmaze_gcfbc_10k_actor_diag_cpu/sd000_20260619_104221/eval.csv
+MSEBC direct final-goal actor,pointmaze-teleport-navigate-v0,"MSEBC LN 256,256","seed 0, 5 episodes/task",0.120,0.120,results/ogbench_screen_exp/dummy/pointmaze_msebc_10k_ln256_actor_diag_cpu/sd000_20260619_104714/eval.csv
+Stochastic TRL + learned waypoint BC,pointmaze-teleport-navigate-v0,5k full-goal BC + body-nearest k16,"3 eval seeds, 20 episodes/task",1.000,1.000,results/pointmaze_bc_topology_navigate_fullgoal_5k_ep20_seed0.csv;results/pointmaze_bc_topology_navigate_fullgoal_5k_ep20_seed12.csv
+Stochastic TRL + learned waypoint BC,pointmaze-teleport-stitch-v0,5k full-goal BC + body-nearest k16,"3 eval seeds, 20 episodes/task",1.000,1.000,results/pointmaze_bc_topology_stitch_fullgoal_5k_ep20_seed0.csv;results/pointmaze_bc_topology_stitch_fullgoal_5k_ep20_seed12.csv

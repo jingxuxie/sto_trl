@@ -1,0 +1,23 @@
+[
+  {
+    "method": "bellman_full",
+    "n": 5,
+    "success_mean": 0.908,
+    "success_std": 0.02315167380558044,
+    "task5_mean": 0.908
+  },
+  {
+    "method": "bellman_matched",
+    "n": 5,
+    "success_mean": 0.38,
+    "success_std": 0.028284271247461894,
+    "task5_mean": 0.38
+  },
+  {
+    "method": "sto_trl_matched",
+    "n": 5,
+    "success_mean": 0.908,
+    "success_std": 0.02315167380558044,
+    "task5_mean": 0.908
+  }
+]

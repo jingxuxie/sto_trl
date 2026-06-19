@@ -1,0 +1,86 @@
+[
+  {
+    "long_horizon_mse": 0.672831218797268,
+    "method": "bellman",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 1
+  },
+  {
+    "long_horizon_mse": 0.672831218797268,
+    "method": "bellman",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 2
+  },
+  {
+    "long_horizon_mse": 0.672831218797268,
+    "method": "bellman",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 4
+  },
+  {
+    "long_horizon_mse": 0.4614960963591585,
+    "method": "bellman",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 8
+  },
+  {
+    "long_horizon_mse": 0.672831218797268,
+    "method": "sto_trl",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 1
+  },
+  {
+    "long_horizon_mse": 0.672831218797268,
+    "method": "sto_trl",
+    "n": 1,
+    "portal_action_rate": 1.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.0,
+    "regret": 0.7517313507497957,
+    "safe_action_rate": 0.0,
+    "success_rate": 0.08,
+    "sweeps": 2
+  },
+  {
+    "long_horizon_mse": 0.3545347819576492,
+    "method": "sto_trl",
+    "n": 1,
+    "portal_action_rate": 0.0,
+    "pred_start_portal": 0.020416666666666666,
+    "pred_start_safe": 0.8007313507497957,
+    "regret": 0.0,
+    "safe_action_rate": 1.0,
+    "success_rate": 1.0,
+    "sweeps": 4
+  }
+]

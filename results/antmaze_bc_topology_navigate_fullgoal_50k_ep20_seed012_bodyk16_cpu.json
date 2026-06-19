@@ -1,0 +1,35 @@
+[
+  {
+    "method": "bellman_full",
+    "n": 3,
+    "success_mean": 0.9466666666666667,
+    "success_std": 0.004714045207910268,
+    "task1_mean": 0.8999999999999999,
+    "task2_mean": 1.0,
+    "task3_mean": 0.9666666666666667,
+    "task4_mean": 0.9833333333333334,
+    "task5_mean": 0.8833333333333333
+  },
+  {
+    "method": "bellman_matched",
+    "n": 3,
+    "success_mean": 0.31,
+    "success_std": 0.0374165738677394,
+    "task1_mean": 0.0,
+    "task2_mean": 0.5,
+    "task3_mean": 0.3833333333333333,
+    "task4_mean": 0.4166666666666667,
+    "task5_mean": 0.25
+  },
+  {
+    "method": "sto_trl_matched",
+    "n": 3,
+    "success_mean": 0.9466666666666667,
+    "success_std": 0.004714045207910268,
+    "task1_mean": 0.8999999999999999,
+    "task2_mean": 1.0,
+    "task3_mean": 0.9666666666666667,
+    "task4_mean": 0.9833333333333334,
+    "task5_mean": 0.8833333333333333
+  }
+]

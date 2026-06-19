@@ -1,0 +1,4 @@
+env,task_scope,eval_setting,controller_steps,bellman_matched,support_trl,stochastic_trl,bellman_full,sto_minus_matched,source
+pointmaze-teleport-stitch-v0,"tasks 4,5","seed 0, 50 episodes/task",0,0.420,0.480,0.930,0.930,0.510,results/pointmaze_stitch_hard_task45_ep50_seed0_fastfocus.csv
+antmaze-teleport-navigate-v0,"tasks 4,5","seed 0, 10 episodes/task",50000,0.300,,0.950,0.950,0.650,results/antmaze_navigate_hard_task45_ep10_seed0_fastfocus.csv
+antmaze-teleport-stitch-v0,"tasks 4,5","seed 0, 10 episodes/task",20000,0.350,,1.000,1.000,0.650,results/antmaze_stitch_hard_task45_ep10_seed0_fastfocus.csv

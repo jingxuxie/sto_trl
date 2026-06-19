@@ -1,0 +1,79 @@
+[
+  {
+    "method": "bellman_12_sweeps",
+    "n": 1,
+    "success_mean": 0.6666666666666666,
+    "success_std": 0.0,
+    "task1_mean": 0.6666666666666666,
+    "task2_mean": 1.0,
+    "task3_mean": 0.3333333333333333,
+    "task4_mean": 0.6666666666666666,
+    "task5_mean": 0.6666666666666666
+  },
+  {
+    "method": "bellman_24_sweeps",
+    "n": 1,
+    "success_mean": 0.9333333333333333,
+    "success_std": 0.0,
+    "task1_mean": 1.0,
+    "task2_mean": 1.0,
+    "task3_mean": 1.0,
+    "task4_mean": 1.0,
+    "task5_mean": 0.6666666666666666
+  },
+  {
+    "method": "bellman_45_sweeps",
+    "n": 1,
+    "success_mean": 1.0,
+    "success_std": 0.0,
+    "task1_mean": 1.0,
+    "task2_mean": 1.0,
+    "task3_mean": 1.0,
+    "task4_mean": 1.0,
+    "task5_mean": 1.0
+  },
+  {
+    "method": "bellman_6_sweeps",
+    "n": 1,
+    "success_mean": 0.3333333333333333,
+    "success_std": 0.0,
+    "task1_mean": 0.0,
+    "task2_mean": 0.0,
+    "task3_mean": 0.3333333333333333,
+    "task4_mean": 0.6666666666666666,
+    "task5_mean": 0.6666666666666666
+  },
+  {
+    "method": "bellman_90_sweeps",
+    "n": 1,
+    "success_mean": 1.0,
+    "success_std": 0.0,
+    "task1_mean": 1.0,
+    "task2_mean": 1.0,
+    "task3_mean": 1.0,
+    "task4_mean": 1.0,
+    "task5_mean": 1.0
+  },
+  {
+    "method": "bellman_full",
+    "n": 1,
+    "success_mean": 1.0,
+    "success_std": 0.0,
+    "task1_mean": 1.0,
+    "task2_mean": 1.0,
+    "task3_mean": 1.0,
+    "task4_mean": 1.0,
+    "task5_mean": 1.0
+  },
+  {
+    "method": "sto_trl_6_sweeps",
+    "n": 1,
+    "success_mean": 1.0,
+    "success_std": 0.0,
+    "task1_mean": 1.0,
+    "task2_mean": 1.0,
+    "task3_mean": 1.0,
+    "task4_mean": 1.0,
+    "task5_mean": 1.0
+  }
+]

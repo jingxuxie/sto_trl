@@ -1,0 +1,4 @@
+action_bin_levels,action_gain,action_mode,action_scale,action_smoothing,action_threshold,bc_eval_backend,bc_policy,cell_size,env,episodes_per_task,gamma,iters,method,n_edges,n_states,overall_success,polish_iters,proximity_weight,seed,task4_success,task_ids,transition_candidates,transition_k
+3,1.0,bc_persistent_waypoint,0.2,0.0,0.25,numpy,results/policies/pointmaze_stitch_fullgoal_bc_5k.pkl,1.0,pointmaze-teleport-stitch-v0,10,0.995,220,bellman_full,4598,565,0.0,0,0.02,0,0.0,4,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,numpy,results/policies/pointmaze_stitch_fullgoal_bc_5k.pkl,1.0,pointmaze-teleport-stitch-v0,10,0.995,220,bellman_full,4598,565,0.0,0,0.02,0,0.0,4,256,5
+3,1.0,transition_value,0.2,0.0,0.25,numpy,results/policies/pointmaze_stitch_fullgoal_bc_5k.pkl,1.0,pointmaze-teleport-stitch-v0,10,0.995,220,bellman_full,4598,565,0.1,0,0.02,0,0.1,4,256,5

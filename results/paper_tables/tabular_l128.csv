@@ -1,0 +1,17 @@
+p_success,optimal_action,method,n,success_rate,risky_action_rate,regret,pred_safe,pred_risky,long_horizon_mse
+0.02,safe,MC positive,3,0.017,1.000,0.056,0.073,0.960,0.02155
+0.02,safe,MC all goals,3,0.000,0.000,0.075,0.073,0.018,0.02143
+0.02,safe,Bellman matched,3,0.017,1.000,0.056,0.000,0.018,0.21682
+0.02,safe,Stochastic TRL,3,1.000,0.000,0.000,0.075,0.018,0.00000
+0.05,safe,MC positive,3,0.038,1.000,0.027,0.073,0.960,0.02155
+0.05,safe,MC all goals,3,0.000,0.000,0.075,0.073,0.033,0.02143
+0.05,safe,Bellman matched,3,0.038,1.000,0.027,0.000,0.033,0.21682
+0.05,safe,Stochastic TRL,3,1.000,0.000,0.000,0.075,0.033,0.00000
+0.10,risky,MC positive,3,0.080,1.000,0.000,0.073,0.960,0.02155
+0.10,risky,MC all goals,3,0.030,0.667,0.064,0.073,0.091,0.02144
+0.10,risky,Bellman matched,3,0.080,1.000,0.000,0.000,0.091,0.21682
+0.10,risky,Stochastic TRL,3,0.388,0.667,0.007,0.075,0.091,0.00000
+0.20,risky,MC positive,3,0.192,1.000,0.000,0.073,0.960,0.02153
+0.20,risky,MC all goals,3,0.133,1.000,0.064,0.073,0.185,0.02143
+0.20,risky,Bellman matched,3,0.192,1.000,0.000,0.000,0.185,0.21677
+0.20,risky,Stochastic TRL,3,0.192,1.000,0.000,0.075,0.185,0.00000

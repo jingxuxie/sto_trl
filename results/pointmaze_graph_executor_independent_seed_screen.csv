@@ -1,0 +1,13 @@
+action_bin_levels,action_gain,action_mode,action_scale,action_smoothing,action_threshold,cell_size,env,episodes_per_task,gamma,iters,method,n_edges,n_states,overall_success,polish_iters,proximity_weight,seed,task1_success,task2_success,task3_success,task4_success,task5_success,task_ids,transition_candidates,transition_k
+3,1.0,mean,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.4,0,0.02,0,0.4,0.5,0.6,0.4,0.1,all,256,5
+3,1.0,mean,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.26,0,0.02,1,0.3,0.3,0.4,0.2,0.1,all,256,5
+3,1.0,center_delta,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.0,0,0.02,0,0.0,0.0,0.0,0.0,0.0,all,256,5
+3,1.0,center_delta,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.0,0,0.02,1,0.0,0.0,0.0,0.0,0.0,all,256,5
+3,1.0,hybrid,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.0,0,0.02,0,0.0,0.0,0.0,0.0,0.0,all,256,5
+3,1.0,hybrid,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.0,0,0.02,1,0.0,0.0,0.0,0.0,0.0,all,256,5
+3,1.0,nearest_transition,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.3,0,0.02,0,0.4,0.0,0.6,0.4,0.1,all,256,5
+3,1.0,nearest_transition,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.18,0,0.02,1,0.2,0.0,0.4,0.2,0.1,all,256,5
+3,1.0,knn_transition,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.22000000000000003,0,0.02,0,0.0,0.0,0.6,0.4,0.1,all,256,5
+3,1.0,knn_transition,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.14,0,0.02,1,0.0,0.0,0.4,0.2,0.1,all,256,5
+3,1.0,transition_value,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.13999999999999999,0,0.02,0,0.0,0.1,0.4,0.1,0.1,all,256,5
+3,1.0,transition_value,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,10,0.995,11,sto_trl_matched,4197,554,0.1,0,0.02,1,0.0,0.0,0.3,0.1,0.1,all,256,5

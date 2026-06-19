@@ -1,0 +1,16 @@
+action_bin_levels,action_gain,action_mode,action_scale,action_smoothing,action_threshold,cell_size,env,gamma,iters,method,n_edges,n_states,overall_success,polish_iters,proximity_weight,seed,task1_success,task_ids,transition_candidates,transition_k
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.0,0,0.02,0,0.0,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.0,0,0.02,1,0.0,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.0,0,0.02,2,0.0,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.0,0,0.02,3,0.0,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,bellman_matched,4197,554,0.0,0,0.02,4,0.0,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.46,0,0.02,0,0.46,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.46,0,0.02,1,0.46,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.46,0,0.02,2,0.46,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.46,0,0.02,3,0.46,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,11,sto_trl_matched,4197,554,0.46,0,0.02,4,0.46,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.48,0,0.02,0,0.48,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.48,0,0.02,1,0.48,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.48,0,0.02,2,0.48,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.48,0,0.02,3,0.48,1,256,5
+3,1.0,persistent_waypoint,0.2,0.0,0.25,1.0,pointmaze-teleport-navigate-v0,0.995,220,bellman_full,4197,554,0.48,0,0.02,4,0.48,1,256,5

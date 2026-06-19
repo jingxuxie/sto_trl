@@ -1,0 +1,20 @@
+{
+  "env": "antmaze-teleport-navigate-v0",
+  "metadata": {
+    "bc_batch_size": 2048,
+    "bc_hidden_dims": [
+      256,
+      256,
+      256
+    ],
+    "bc_layer_norm": true,
+    "bc_lr": 0.0003,
+    "bc_max_future": 30,
+    "bc_min_future": 1,
+    "bc_seed": 1,
+    "bc_steps": 50000,
+    "goal_representation": "full"
+  },
+  "save_policy": "results/policies/antmaze_navigate_fullgoal_bc_50k_seed1.pkl",
+  "train_only": true
+}

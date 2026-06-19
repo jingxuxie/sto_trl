@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="420" viewBox="0 0 800 420">
+<rect width="100%" height="100%" fill="white"/>
+<text x="400.0" y="30.0" text-anchor="middle" font-size="18" fill="#222"><tspan x="400.0" dy="0">Planning budget on</tspan><tspan x="400.0" dy="20">16x8 stochastic grid</tspan></text>
+<line x1="72" y1="58" x2="72" y2="338" stroke="#333" stroke-width="1"/>
+<line x1="72" y1="338" x2="772" y2="338" stroke="#333" stroke-width="1"/>
+<line x1="67" y1="338.0" x2="772" y2="338.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="342.0" text-anchor="end" font-size="12" fill="#333">0.0</text>
+<line x1="67" y1="282.0" x2="772" y2="282.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="286.0" text-anchor="end" font-size="12" fill="#333">0.2</text>
+<line x1="67" y1="226.0" x2="772" y2="226.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="230.0" text-anchor="end" font-size="12" fill="#333">0.4</text>
+<line x1="67" y1="170.0" x2="772" y2="170.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="174.0" text-anchor="end" font-size="12" fill="#333">0.6</text>
+<line x1="67" y1="114.0" x2="772" y2="114.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="118.0" text-anchor="end" font-size="12" fill="#333">0.8</text>
+<line x1="67" y1="58.0" x2="772" y2="58.0" stroke="#e5e5e5" stroke-width="1"/>
+<text x="62" y="62.0" text-anchor="end" font-size="12" fill="#333">1.0</text>
+<line x1="72.0" y1="338" x2="72.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="72.0" y="360" text-anchor="middle" font-size="12" fill="#333">1</text>
+<line x1="172.0" y1="338" x2="172.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="172.0" y="360" text-anchor="middle" font-size="12" fill="#333">2</text>
+<line x1="272.0" y1="338" x2="272.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="272.0" y="360" text-anchor="middle" font-size="12" fill="#333">4</text>
+<line x1="330.5" y1="338" x2="330.5" y2="343" stroke="#333" stroke-width="1"/>
+<text x="330.5" y="360" text-anchor="middle" font-size="12" fill="#333">6</text>
+<line x1="352.7" y1="338" x2="352.7" y2="343" stroke="#333" stroke-width="1"/>
+<text x="352.7" y="360" text-anchor="middle" font-size="12" fill="#333">7</text>
+<line x1="372.0" y1="338" x2="372.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="372.0" y="360" text-anchor="middle" font-size="12" fill="#333">8</text>
+<line x1="472.0" y1="338" x2="472.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="472.0" y="360" text-anchor="middle" font-size="12" fill="#333">16</text>
+<line x1="572.0" y1="338" x2="572.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="572.0" y="360" text-anchor="middle" font-size="12" fill="#333">32</text>
+<line x1="672.0" y1="338" x2="672.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="672.0" y="360" text-anchor="middle" font-size="12" fill="#333">64</text>
+<line x1="730.5" y1="338" x2="730.5" y2="343" stroke="#333" stroke-width="1"/>
+<text x="730.5" y="360" text-anchor="middle" font-size="12" fill="#333">96</text>
+<line x1="762.7" y1="338" x2="762.7" y2="343" stroke="#333" stroke-width="1"/>
+<text x="762.7" y="360" text-anchor="middle" font-size="12" fill="#333">120</text>
+<line x1="769.7" y1="338" x2="769.7" y2="343" stroke="#333" stroke-width="1"/>
+<text x="769.7" y="360" text-anchor="middle" font-size="12" fill="#333">126</text>
+<line x1="770.9" y1="338" x2="770.9" y2="343" stroke="#333" stroke-width="1"/>
+<text x="770.9" y="360" text-anchor="middle" font-size="12" fill="#333">127</text>
+<line x1="772.0" y1="338" x2="772.0" y2="343" stroke="#333" stroke-width="1"/>
+<text x="772.0" y="360" text-anchor="middle" font-size="12" fill="#333">128</text>
+<text x="422.0" y="388.0" text-anchor="middle" font-size="13" fill="#222"><tspan x="422.0" dy="0">Planning</tspan><tspan x="422.0" dy="15">sweeps</tspan></text>
+<text x="18" y="198.0" transform="rotate(-90 18 198.0)" text-anchor="middle" font-size="13" fill="#333">Success rate</text>
+<polyline points="72.0,324.6 172.0,324.6 272.0,324.6 372.0,324.6 472.0,324.6 572.0,324.6 672.0,324.6 730.5,324.6 762.7,324.6 769.7,58.0 770.9,58.0 772.0,58.0" fill="none" stroke="#4C78A8" stroke-width="2.6"/>
+<circle cx="72.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="172.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="272.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="372.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="472.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="572.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="672.0" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="730.5" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="762.7" cy="324.6" r="4" fill="#4C78A8"/>
+<circle cx="769.7" cy="58.0" r="4" fill="#4C78A8"/>
+<text x="769.7" y="49.0" text-anchor="middle" font-size="10" fill="#222">1.000</text>
+<circle cx="770.9" cy="58.0" r="4" fill="#4C78A8"/>
+<text x="770.9" y="49.0" text-anchor="middle" font-size="10" fill="#222">1.000</text>
+<circle cx="772.0" cy="58.0" r="4" fill="#4C78A8"/>
+<text x="772.0" y="49.0" text-anchor="middle" font-size="10" fill="#222">1.000</text>
+<polyline points="72.0,324.6 172.0,324.6 272.0,324.6 330.5,324.6 352.7,58.0 372.0,58.0" fill="none" stroke="#F58518" stroke-width="2.6"/>
+<circle cx="72.0" cy="324.6" r="4" fill="#F58518"/>
+<circle cx="172.0" cy="324.6" r="4" fill="#F58518"/>
+<circle cx="272.0" cy="324.6" r="4" fill="#F58518"/>
+<circle cx="330.5" cy="324.6" r="4" fill="#F58518"/>
+<circle cx="352.7" cy="58.0" r="4" fill="#F58518"/>
+<text x="352.7" y="49.0" text-anchor="middle" font-size="10" fill="#222">1.000</text>
+<circle cx="372.0" cy="58.0" r="4" fill="#F58518"/>
+<text x="372.0" y="49.0" text-anchor="middle" font-size="10" fill="#222">1.000</text>
+<line x1="72" y1="390" x2="90" y2="390" stroke="#4C78A8" stroke-width="3"/>
+<circle cx="81" cy="390" r="4" fill="#4C78A8"/>
+<text x="96" y="394" font-size="13" fill="#222">Bellman</text>
+<line x1="282" y1="390" x2="300" y2="390" stroke="#F58518" stroke-width="3"/>
+<circle cx="291" cy="390" r="4" fill="#F58518"/>
+<text x="306" y="394" font-size="13" fill="#222">Stochastic TRL</text>
+</svg>
