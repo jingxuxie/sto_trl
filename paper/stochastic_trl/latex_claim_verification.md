@@ -1,7 +1,7 @@
 # LaTeX Claim Verification
 
 Status: PASS
-Checked rows: 53
+Checked rows: 60
 
 ## Checked Row Labels
 
@@ -10,6 +10,11 @@ Checked rows: 53
 - grid budget Bellman 126
 - grid budget Stochastic TRL 6
 - grid budget Stochastic TRL 7
+- neural shortcut neural_bellman_td
+- neural shortcut neural_sto_trl
+- neural shortcut neural_support_trl
+- neural shortcut table_sto_trl_matched
+- neural shortcut table_full_bellman
 - main hard task pointmaze-teleport-navigate-v0
 - main hard task pointmaze-teleport-stitch-v0
 - main hard task antmaze-teleport-navigate-v0
@@ -40,6 +45,8 @@ Checked rows: 53
 - controller execution isolation Stochastic TRL + learned waypoint BC pointmaze-teleport-stitch-v0
 - pointmaze tie-policy head pointmaze-teleport-navigate-v0
 - pointmaze tie-policy head pointmaze-teleport-stitch-v0
+- pointmaze qhead critic PointMaze navigate
+- pointmaze qhead critic PointMaze stitch
 - pointmaze previous-action policy head pointmaze-teleport-navigate-v0
 - pointmaze previous-action policy head pointmaze-teleport-stitch-v0
 - pointmaze tie-policy eval-seed pointmaze-teleport-navigate-v0

@@ -1,0 +1,86 @@
+[
+  {
+    "action_agreement_to_full_mean": 0.5510101010101011,
+    "method": "qhead_bellman_td",
+    "n": 1,
+    "success_mean": 0.06602456687904928,
+    "success_std": 0.0,
+    "task1_mean": 6.074580425980048e-18,
+    "task2_mean": 0.0,
+    "task3_mean": 2.2643532344516518e-10,
+    "task4_mean": 1.430338355667847e-15,
+    "task5_mean": 0.33012283416880966
+  },
+  {
+    "action_agreement_to_full_mean": 0.35353535353535354,
+    "method": "qhead_sto_trl",
+    "n": 1,
+    "success_mean": 3.4265300612369134e-12,
+    "success_std": 0.0,
+    "task1_mean": 0.0,
+    "task2_mean": 0.0,
+    "task3_mean": 1.2156399127390205e-17,
+    "task4_mean": 1.126939123079591e-17,
+    "task5_mean": 1.7132626880394208e-11
+  },
+  {
+    "action_agreement_to_full_mean": 0.9661616161616161,
+    "method": "qhead_sto_trl_distill",
+    "n": 1,
+    "success_mean": 0.9999537620051544,
+    "success_std": 0.0,
+    "task1_mean": 0.9999462318075818,
+    "task2_mean": 0.99999833112696,
+    "task3_mean": 0.999993774189797,
+    "task4_mean": 0.9998898514144443,
+    "task5_mean": 0.999940621486989
+  },
+  {
+    "action_agreement_to_full_mean": 0.8621212121212121,
+    "method": "qhead_sto_trl_target_iter",
+    "n": 1,
+    "success_mean": 0.19996761205543445,
+    "success_std": 0.0,
+    "task1_mean": 1.0716271180055388e-05,
+    "task2_mean": 1.8091523516129813e-16,
+    "task3_mean": 2.159435291212073e-05,
+    "task4_mean": 1.8134090283371697e-08,
+    "task5_mean": 0.9998057315189897
+  },
+  {
+    "action_agreement_to_full_mean": 0.7388888888888889,
+    "method": "table_bellman_matched",
+    "n": 1,
+    "success_mean": 0.47559542605758204,
+    "success_std": 0.0,
+    "task1_mean": 0.49855256046483115,
+    "task2_mean": 0.4480689270902572,
+    "task3_mean": 0.48471325477600763,
+    "task4_mean": 0.4480760078254047,
+    "task5_mean": 0.4985663801314095
+  },
+  {
+    "action_agreement_to_full_mean": 1.0,
+    "method": "table_full_bellman",
+    "n": 1,
+    "success_mean": 0.9999537398655056,
+    "success_std": 0.0,
+    "task1_mean": 0.9999461211008993,
+    "task2_mean": 0.99999833112696,
+    "task3_mean": 0.9999937741897968,
+    "task4_mean": 0.9998898514144443,
+    "task5_mean": 0.9999406214954274
+  },
+  {
+    "action_agreement_to_full_mean": 0.9883838383838384,
+    "method": "table_sto_trl_matched",
+    "n": 1,
+    "success_mean": 0.9999537620051544,
+    "success_std": 0.0,
+    "task1_mean": 0.9999462318075818,
+    "task2_mean": 0.99999833112696,
+    "task3_mean": 0.999993774189797,
+    "task4_mean": 0.9998898514144443,
+    "task5_mean": 0.999940621486989
+  }
+]

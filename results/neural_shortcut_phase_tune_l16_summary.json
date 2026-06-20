@@ -1,0 +1,58 @@
+{
+  "neural_bellman_td": {
+    "decision_correct_rate": 1.0,
+    "n": 1.0,
+    "risky_action_rate": 0.0,
+    "safe_opt_risky_action_rate": 0.0,
+    "safe_opt_success_mean": 1.0,
+    "success_mean": 1.0
+  },
+  "neural_sto_trl": {
+    "decision_correct_rate": 1.0,
+    "n": 1.0,
+    "risky_action_rate": 0.0,
+    "safe_opt_risky_action_rate": 0.0,
+    "safe_opt_success_mean": 0.0,
+    "success_mean": 0.0
+  },
+  "neural_support_trl": {
+    "decision_correct_rate": 1.0,
+    "n": 1.0,
+    "risky_action_rate": 0.0,
+    "safe_opt_risky_action_rate": 0.0,
+    "safe_opt_success_mean": 1.0,
+    "success_mean": 1.0
+  },
+  "table_bellman_matched": {
+    "decision_correct_rate": 0.0,
+    "n": 1.0,
+    "risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0,
+    "safe_opt_success_mean": 0.05,
+    "success_mean": 0.05
+  },
+  "table_full_bellman": {
+    "decision_correct_rate": 1.0,
+    "n": 1.0,
+    "risky_action_rate": 0.0,
+    "safe_opt_risky_action_rate": 0.0,
+    "safe_opt_success_mean": 1.0,
+    "success_mean": 1.0
+  },
+  "table_sto_trl_matched": {
+    "decision_correct_rate": 1.0,
+    "n": 1.0,
+    "risky_action_rate": 0.0,
+    "safe_opt_risky_action_rate": 0.0,
+    "safe_opt_success_mean": 1.0,
+    "success_mean": 1.0
+  },
+  "table_support_trl": {
+    "decision_correct_rate": 0.0,
+    "n": 1.0,
+    "risky_action_rate": 1.0,
+    "safe_opt_risky_action_rate": 1.0,
+    "safe_opt_success_mean": 0.05,
+    "success_mean": 0.05
+  }
+}

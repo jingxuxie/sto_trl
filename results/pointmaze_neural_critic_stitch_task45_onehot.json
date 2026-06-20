@@ -1,0 +1,47 @@
+[
+  {
+    "action_agreement_to_full_mean": 0.4858585858585859,
+    "method": "neural_bellman_td",
+    "n": 1,
+    "success_mean": 1.7182313032790372e-05,
+    "success_std": 0.0,
+    "task4_mean": 3.4364626065580744e-05,
+    "task5_mean": 0.0
+  },
+  {
+    "action_agreement_to_full_mean": 0.3090909090909091,
+    "method": "neural_sto_trl",
+    "n": 1,
+    "success_mean": 1.530095480910724e-11,
+    "success_std": 0.0,
+    "task4_mean": 2.6332798047566543e-16,
+    "task5_mean": 3.0601646290234e-11
+  },
+  {
+    "action_agreement_to_full_mean": 0.7156565656565657,
+    "method": "table_bellman_matched",
+    "n": 1,
+    "success_mean": 0.4843180346883871,
+    "success_std": 0.0,
+    "task4_mean": 0.44631837097331095,
+    "task5_mean": 0.5223176984034632
+  },
+  {
+    "action_agreement_to_full_mean": 1.0,
+    "method": "table_full_bellman",
+    "n": 1,
+    "success_mean": 0.9999470727819717,
+    "success_std": 0.0,
+    "task4_mean": 0.9999364194956779,
+    "task5_mean": 0.9999577260682655
+  },
+  {
+    "action_agreement_to_full_mean": 0.9808080808080808,
+    "method": "table_sto_trl_matched",
+    "n": 1,
+    "success_mean": 0.9999470727821916,
+    "success_std": 0.0,
+    "task4_mean": 0.9999364194956799,
+    "task5_mean": 0.9999577260687034
+  }
+]

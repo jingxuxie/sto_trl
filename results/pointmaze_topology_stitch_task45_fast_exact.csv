@@ -1,0 +1,5 @@
+action_scale,env,episodes_per_task,eval_mode,eval_seconds,gamma,iters,max_episode_steps,method,model_max_steps,model_rollout_mode,n_actions,n_states,overall_success,seed,task4_length,task4_success,task5_length,task5_success,task_ids,topology_source
+0.2,pointmaze-teleport-stitch-v0,1,model,0.005024916026741266,0.995,6,,sto_trl_matched,1000,exact,4,45,1.0,0,25.0,1.0,27.0,1.0,"4,5",dataset
+0.2,pointmaze-teleport-stitch-v0,1,model,0.02271898399339989,0.995,6,,bellman_matched,1000,exact,4,45,0.4780346003691283,0,500.1490514905083,0.5013550135501355,547.1068400340752,0.4547141871881212,"4,5",dataset
+0.2,pointmaze-teleport-stitch-v0,1,model,0.0032344519859179854,0.995,180,,bellman_full,1000,exact,4,45,1.0,0,25.0,1.0,27.0,1.0,"4,5",dataset
+0.2,pointmaze-teleport-stitch-v0,1,model,0.017988436040468514,0.995,6,,support_trl_matched,1000,exact,4,45,0.5066583680190868,0,500.1490514905083,0.5013550135501355,491.1198461573785,0.5119617224880381,"4,5",dataset

@@ -1,0 +1,26 @@
+[
+  {
+    "method": "bellman_full",
+    "n": 1,
+    "success_mean": 0.6666666666666666,
+    "success_std": 0.0,
+    "task4_mean": 1.0,
+    "task5_mean": 0.3333333333333333
+  },
+  {
+    "method": "bellman_matched",
+    "n": 1,
+    "success_mean": 0.3333333333333333,
+    "success_std": 0.0,
+    "task4_mean": 0.6666666666666666,
+    "task5_mean": 0.0
+  },
+  {
+    "method": "sto_trl_matched",
+    "n": 1,
+    "success_mean": 0.6666666666666666,
+    "success_std": 0.0,
+    "task4_mean": 1.0,
+    "task5_mean": 0.3333333333333333
+  }
+]

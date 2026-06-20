@@ -10,6 +10,7 @@ Use this when converting the manuscript draft into a conference paper.
 | AntMaze navigate controller seeds | `results/paper_tables/antmaze_navigate_controller_seeds_ep20_seed012.csv` | Controller-seed robustness on AntMaze navigate |
 | AntMaze stitch controller seeds | `results/paper_tables/antmaze_stitch_controller_seeds_ep20_seed012.csv` | Controller-seed robustness on hardest AntMaze task |
 | PointMaze support ablation | `results/paper_tables/pointmaze_topology_stitch_support_baseline_5seed.csv` | Shows stochastic calibration matters beyond support composition |
+| Neural shortcut critic | `results/paper_tables/neural_shortcut_phase.csv` | Shows a learned MLP stochastic-TRL critic solves stochastic long-horizon shortcuts |
 | PointMaze focused task 5 | `results/paper_tables/pointmaze_stitch_task5_ep100_seed01234.csv` | Appendix single-task high-episode check |
 | PointMaze learned controller | `results/paper_tables/pointmaze_learned_controller_ep20_seed012.csv` | Shows PointMaze signal survives a learned BC executor |
 | Controller execution isolation | `results/paper_tables/controller_execution_isolation.csv` | Separates weak direct final-goal actors from successful stochastic TRL waypoint execution |
@@ -24,6 +25,7 @@ Use this when converting the manuscript draft into a conference paper.
 | --- | --- | --- |
 | Long-horizon shortcut success | `results/figures/tabular_horizon_success.svg` | Stochastic TRL scales across safe path lengths |
 | 2D grid shortcut success | `results/figures/grid_shortcut_success.svg` | Stochastic TRL avoids risky portal in 2D |
+| Neural shortcut phase | `results/figures/neural_shortcut_phase.pdf` | Learned stochastic-TRL critic matches full Bellman while neural Bellman/support baselines fail |
 | Grid planning budget curve | `results/figures/grid_budget_curve.svg` | 7 sweeps versus 126 Bellman sweeps on hardest grid |
 | PointMaze graph success | `results/figures/pointmaze_graph_success.svg` | Fully empirical graph diagnostic improves over matched Bellman |
 | AntMaze body-candidate screen | `results/figures/antmaze_bodyk16_multiseed.svg` | Learned-controller AntMaze matched-budget signal |
@@ -45,6 +47,8 @@ Use this when converting the manuscript draft into a conference paper.
 
 - For topology diagnostics, say "topology-level stochastic planner with a
   learned executor" rather than "end-to-end neural stochastic TRL".
+- For the neural shortcut critic, say "learned finite-MDP critic" or
+  "controlled learned-critic screen", not "OGBench end-to-end neural agent".
 - For full Bellman, say "long-sweep reference" rather than "oracle policy".
 - For controller robustness, say both AntMaze navigate and stitch have three
   independently trained controller seeds.

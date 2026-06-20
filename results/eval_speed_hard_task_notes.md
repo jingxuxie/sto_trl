@@ -27,6 +27,15 @@ environment, topology states, dataset shape, model type, training steps,
 learning rate, seed, hidden dimensions, and a hash of the table target for
 value heads. CSV rows now include `transition_cache_hit` and `value_cache_hit`.
 
+June 20 update: for q-head screens, the wall time can be dominated by value-head
+fitting rather than environment evaluation. The AntMaze stitch previous-action
+q-head screen with 5000 value steps spent 260.8s in value fitting across the
+three method targets; the actual rollouts were only 3.5-4.4s per method. When
+screening q-head ideas, first run only `sto_trl_matched` on tasks 4 and 5 with
+3 episodes per task, then add `bellman_full` only if the stochastic row clears
+a useful threshold. Reusing the same value-model settings should hit the
+`results/cache/` value cache on reruns.
+
 ## Fast iteration settings
 
 Use one seed, selected hard tasks, loaded policies, and only the methods needed
@@ -108,6 +117,11 @@ and 5 took about 8.8-10.2 seconds per method. Profiling split that time roughly
 between JAX policy calls and MuJoCo stepping, with each around 0.33-0.35 ms per
 step/call.
 
+Failed AntMaze policies are especially expensive because they usually run to
+the 1000-step task horizon. In the previous-action q-head stitch failure,
+stochastic TRL and full Bellman each used 6000 simulator steps for 6 episodes,
+so even a small hard-task screen still took about 4.3s per evaluated method.
+
 ## Profiling check on June 19
 
 I added `--profile-eval` to `scripts/run_antmaze_bc_topology_planner.py`.
@@ -145,6 +159,19 @@ PointMaze stitch hard-task profiling after adding cached cell centers:
 
 ## Rejected speed knobs
 
+- `--policy-eval-backend jax_fused` compiles feature construction and policy
+  application into one JAX call, and single-step actions matched the original
+  JAX path within `7e-7` on 128 real AntMaze state/goal pairs. It still changed
+  the long-horizon hard-task stitch outcome from 1.00 to 0.90 and was slower
+  in the direct previous-action policy-head comparison:
+  original JAX took 4.53s at 0.354 ms/action call, while fused JAX took 6.08s
+  at 0.530 ms/action call. Keep original `--policy-eval-backend jax` for
+  claimed rows and for serious screens.
+- `--max-episode-steps 800` is not useful for successful stochastic-TRL stitch
+  screens: the same previous-action policy-head hard-task row stayed at 1.00
+  success but took 4.86s, versus 4.53s without the cap in the direct JAX
+  reference. It can shorten some failed-baseline episodes, but it changes the
+  evaluation protocol and should only be used as a rough triage knob.
 - `--eval-action-repeat 2` made stitch hard-task success collapse to 0.50 in a
   5-episode-per-task check, so action repeat should stay at 1.
 - `--path-mode persistent` is not a universal speed/performance knob. It
@@ -160,6 +187,14 @@ PointMaze stitch hard-task profiling after adding cached cell centers:
 - `--policy-eval-backend numpy` reduced a six-episode hard-task stitch rollout
   from 2.87s to 2.10s, but success changed from 1.00 to 0.83 because tiny
   numerical action differences compounded over long MuJoCo rollouts.
+
+Verification for the latest rejected speed knobs:
+`results/eval_speed_rejection_verification.md`.
+Raw files:
+`results/antmaze_stitch_prev_policy_hard_task45_ep5_seed0_jax_reference.csv`,
+`results/antmaze_stitch_prev_policy_hard_task45_ep5_seed0_jax_fused.csv`,
+`results/antmaze_stitch_prev_policy_hard_task45_ep5_seed0_cap800.csv`,
+`results/antmaze_stitch_prev_policy_hard_task45_ep5_seed0_cap800_matched.csv`.
 
 ## Latest single-seed hard-task checks
 
@@ -385,3 +420,57 @@ fixed:
 - Additional raw files:
   `results/antmaze_navigate_rawobs_transition_tie_policy_head_ep10_tseed0_evalseed12.csv`,
   `results/antmaze_stitch_rawobs_transition_tie_policy_head_ep10_tseed0_evalseed12.csv`
+
+## June 19 Current Fast-Horizon Update
+
+I replaced the PointMaze exact model evaluator's inner Python loop with a
+prebuilt augmented transition matrix over `(cell, previous_action)`. This keeps
+the same exact finite-horizon reachability calculation but makes failed
+1000-step policies cheap to screen.
+
+PointMaze teleport stitch, tasks 4 and 5, exact model proxy:
+
+| method | success | task4 | task5 | eval seconds |
+| --- | ---: | ---: | ---: | ---: |
+| Bellman matched | 0.478 | 0.501 | 0.455 | 0.023 |
+| Support TRL | 0.507 | 0.501 | 0.512 | 0.018 |
+| Stochastic TRL | 1.000 | 1.000 | 1.000 | 0.005 |
+| Bellman full | 1.000 | 1.000 | 1.000 | 0.003 |
+
+Raw file: `results/pointmaze_topology_stitch_task45_fast_exact.csv`.
+
+PointMaze teleport navigate and stitch, all tasks, real environment, seed 0,
+one episode per task, full 1000-step horizon:
+
+| env | Bellman matched | Support TRL | Stochastic TRL | Bellman full |
+| --- | ---: | ---: | ---: | ---: |
+| navigate | 0.200 | 0.400 | 1.000 | 1.000 |
+| stitch | 0.200 | 0.400 | 1.000 | 1.000 |
+
+Raw files:
+`results/pointmaze_topology_navigate_all_env_seed0_ep1.csv`,
+`results/pointmaze_topology_stitch_all_env_seed0_ep1.csv`.
+
+AntMaze teleport hard tasks 4 and 5, real environment, seed 0, five episodes
+per task, loaded full-goal BC executor, body-nearest `k=16`, JAX policy
+backend:
+
+| env | Bellman matched | Stochastic TRL | Bellman full | setup seconds | Bellman eval seconds | Sto-TRL eval seconds | full-Bellman eval seconds |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| navigate | 0.400 | 0.900 | 0.900 | 1.15 | 4.65 | 4.55 | 4.51 |
+| stitch | 0.600 | 1.000 | 1.000 | 1.15 | 3.52 | 4.31 | 4.20 |
+
+Raw files:
+`results/antmaze_navigate_hard_task45_ep5_seed0_current.csv`,
+`results/antmaze_stitch_hard_task45_ep5_seed0_current.csv`.
+
+Plain neural scalar critics are not yet the path to promoted results. A
+PointMaze one-hot MLP critic reached tiny supervised loss but only 0.31 action
+agreement to the full/stochastic table target and zero hard-task success. A
+fixed-target Sto-TRL distillation run also failed with 0.33 action agreement.
+This isolates the current neural issue as value-head parameterization/training,
+not the stochastic TRL target or the low-level executor.
+
+Raw files:
+`results/pointmaze_neural_critic_stitch_task45_onehot.csv`,
+`results/pointmaze_neural_critic_stitch_task45_distill_onehot.csv`.

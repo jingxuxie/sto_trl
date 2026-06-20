@@ -1,0 +1,5 @@
+action_scale,env,episodes_per_task,eval_mode,eval_seconds,gamma,iters,max_episode_steps,method,model_max_steps,model_rollout_mode,n_actions,n_states,overall_success,seed,task1_length,task1_success,task2_length,task2_success,task3_length,task3_success,task4_length,task4_success,task5_length,task5_success,task_ids,topology_source
+0.2,pointmaze-teleport-navigate-v0,1,env,0.12782666803104803,0.995,6,,sto_trl_matched,,,4,45,1.0,0,354.0,1.0,245.0,1.0,233.0,1.0,410.0,1.0,425.0,1.0,all,dataset
+0.2,pointmaze-teleport-navigate-v0,1,env,0.2950827259919606,0.995,6,,bellman_matched,,,4,45,0.2,0,1000.0,0.0,1000.0,0.0,43.0,1.0,1000.0,0.0,1000.0,0.0,all,dataset
+0.2,pointmaze-teleport-navigate-v0,1,env,0.24545963504351676,0.995,6,,support_trl_matched,,,4,45,0.4,0,118.0,1.0,1000.0,0.0,43.0,1.0,1000.0,0.0,1000.0,0.0,all,dataset
+0.2,pointmaze-teleport-navigate-v0,1,env,0.13281090196687728,0.995,180,,bellman_full,,,4,45,1.0,0,354.0,1.0,245.0,1.0,233.0,1.0,410.0,1.0,425.0,1.0,all,dataset

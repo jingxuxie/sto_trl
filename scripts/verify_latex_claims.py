@@ -10,10 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TABLE_DIR = ROOT / "results" / "paper_tables"
+RESULTS_DIR = ROOT / "results"
 TEX_PATH = ROOT / "paper" / "stochastic_trl" / "main.tex"
 REPORT_PATH = ROOT / "paper" / "stochastic_trl" / "latex_claim_verification.md"
 
 GRID_BUDGET = TABLE_DIR / "grid_budget_curve.csv"
+NEURAL_SHORTCUT = TABLE_DIR / "neural_shortcut_phase.csv"
 MAIN_HARD_TASKS = TABLE_DIR / "main_hard_task_results.csv"
 SUPPORT_ABLATION = TABLE_DIR / "pointmaze_topology_stitch_support_baseline_5seed.csv"
 ANTMAZE_NAVIGATE_CONTROLLERS = TABLE_DIR / "antmaze_navigate_controller_seeds_ep20_seed012.csv"
@@ -24,6 +26,8 @@ POINTMAZE_LEARNED_TRANSITION = TABLE_DIR / "pointmaze_learned_transition.csv"
 POINTMAZE_LEARNED_CONTROLLER = TABLE_DIR / "pointmaze_learned_controller_ep20_seed012.csv"
 CONTROLLER_EXECUTION_ISOLATION = TABLE_DIR / "controller_execution_isolation.csv"
 POINTMAZE_TIE_POLICY_HEAD = TABLE_DIR / "pointmaze_tie_policy_head_ep20_seed0.csv"
+POINTMAZE_QHEAD_NAVIGATE = RESULTS_DIR / "pointmaze_qhead_target_fit_navigate_all_exact.csv"
+POINTMAZE_QHEAD_STITCH = RESULTS_DIR / "pointmaze_qhead_target_fit_stitch_all_exact.csv"
 POINTMAZE_PREV_POLICY_HEAD = TABLE_DIR / "pointmaze_rawobs_transition_prev_policy_head_ep20_seed0.csv"
 POINTMAZE_TIE_POLICY_HEAD_EVAL_SEED = TABLE_DIR / "pointmaze_tie_policy_head_ep20_evalseed012.csv"
 POINTMAZE_TIE_POLICY_HEAD_TRANSITION_SEED = TABLE_DIR / "pointmaze_tie_policy_head_ep20_tseed012.csv"
@@ -68,6 +72,14 @@ ANTMAZE_TRANSITION_MODEL_LABELS = {
     "raw-observation MLP jump-change": "raw obs MLP + BC",
 }
 
+NEURAL_SHORTCUT_LABELS = {
+    "neural_bellman_td": "Neural Bellman TD",
+    "neural_sto_trl": "Neural Stochastic TRL",
+    "neural_support_trl": "Neural Support TRL",
+    "table_sto_trl_matched": "Table Stochastic TRL",
+    "table_full_bellman": "Table full Bellman",
+}
+
 
 def read_rows(path: Path) -> list[dict[str, str]]:
     with path.open(newline="") as f:
@@ -92,6 +104,13 @@ def lookup(rows: list[dict[str, str]], **criteria: str) -> dict[str, str]:
         criteria_text = ", ".join(f"{key}={value!r}" for key, value in criteria.items())
         raise ValueError(f"expected one row for {criteria_text}, found {len(matches)}")
     return matches[0]
+
+
+def mean_metric(rows: list[dict[str, str]], method: str, metric: str) -> float:
+    vals = [float(row[metric]) for row in rows if row.get("method") == method]
+    if not vals:
+        raise ValueError(f"no rows for method={method!r} metric={metric!r}")
+    return sum(vals) / len(vals)
 
 
 def add_required(
@@ -123,6 +142,25 @@ def build_expected_rows() -> list[tuple[str, str]]:
                 fmt(row["success_rate"]),
                 fmt(row["safe_action_rate"]),
                 fmt(row["portal_action_rate"]),
+            ),
+        )
+
+    neural_rows = read_rows(NEURAL_SHORTCUT)
+    for method in [
+        "neural_bellman_td",
+        "neural_sto_trl",
+        "neural_support_trl",
+        "table_sto_trl_matched",
+        "table_full_bellman",
+    ]:
+        add_required(
+            checks,
+            f"neural shortcut {method}",
+            latex_row(
+                NEURAL_SHORTCUT_LABELS[method],
+                fmt(mean_metric(neural_rows, method, "success_rate")),
+                fmt(mean_metric(neural_rows, method, "decision_correct")),
+                fmt(mean_metric(neural_rows, method, "risky_action")),
             ),
         )
 
@@ -253,6 +291,28 @@ def build_expected_rows() -> list[tuple[str, str]]:
                 fmt(row["stochastic_trl"]),
                 fmt(row["bellman_full"]),
                 fmt(row["value_action_agreement"]),
+            ),
+        )
+
+    for env_label, path in [
+        ("PointMaze navigate", POINTMAZE_QHEAD_NAVIGATE),
+        ("PointMaze stitch", POINTMAZE_QHEAD_STITCH),
+    ]:
+        rows = read_rows(path)
+        qhead_bellman = lookup(rows, method="qhead_bellman_td")
+        qhead_sto = lookup(rows, method="qhead_sto_trl_target_fit")
+        table_bellman = lookup(rows, method="table_bellman_matched")
+        table_sto = lookup(rows, method="table_sto_trl_matched")
+        add_required(
+            checks,
+            f"pointmaze qhead critic {env_label}",
+            latex_row(
+                env_label,
+                fmt(qhead_bellman["overall_success"]),
+                fmt(qhead_sto["overall_success"]),
+                fmt(table_bellman["overall_success"]),
+                fmt(table_sto["overall_success"]),
+                fmt(qhead_sto["action_agreement_to_full"]),
             ),
         )
 

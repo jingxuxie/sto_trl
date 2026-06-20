@@ -1,0 +1,50 @@
+[
+  {
+    "action_agreement_to_full_mean": 0.958080808080808,
+    "method": "qhead_sto_trl_buffered_topk_reset_final",
+    "n": 3,
+    "success_mean": 0.9333333333333335,
+    "success_std": 0.041096093353126494,
+    "task1_mean": 0.9,
+    "task2_mean": 0.9333333333333332,
+    "task3_mean": 0.9333333333333332,
+    "task4_mean": 0.9333333333333332,
+    "task5_mean": 0.9666666666666667
+  },
+  {
+    "action_agreement_to_full_mean": 0.9585858585858585,
+    "method": "qhead_sto_trl_target_fit",
+    "n": 3,
+    "success_mean": 0.9333333333333335,
+    "success_std": 0.041096093353126494,
+    "task1_mean": 0.9,
+    "task2_mean": 0.9333333333333332,
+    "task3_mean": 0.9333333333333332,
+    "task4_mean": 0.9333333333333332,
+    "task5_mean": 0.9666666666666667
+  },
+  {
+    "action_agreement_to_full_mean": 1.0,
+    "method": "table_full_bellman",
+    "n": 3,
+    "success_mean": 0.9333333333333335,
+    "success_std": 0.041096093353126494,
+    "task1_mean": 0.9,
+    "task2_mean": 0.9333333333333332,
+    "task3_mean": 0.9333333333333332,
+    "task4_mean": 0.9333333333333332,
+    "task5_mean": 0.9666666666666667
+  },
+  {
+    "action_agreement_to_full_mean": 0.9808080808080808,
+    "method": "table_sto_trl_matched",
+    "n": 3,
+    "success_mean": 0.9333333333333335,
+    "success_std": 0.041096093353126494,
+    "task1_mean": 0.9,
+    "task2_mean": 0.9333333333333332,
+    "task3_mean": 0.9333333333333332,
+    "task4_mean": 0.9333333333333332,
+    "task5_mean": 0.9666666666666667
+  }
+]

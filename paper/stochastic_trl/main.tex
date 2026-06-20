@@ -58,6 +58,9 @@ navigate and above 0.950 success on stitch. In a learned high-level module
 screen that replaces both table transition fitting and table action values
 with raw-observation MLP heads, Stochastic TRL still reaches 0.933 success on
 AntMaze navigate and 0.967 on AntMaze stitch across three evaluation seeds.
+A controlled learned-critic screen further shows that a small MLP trained with
+the stochastic transitive target solves all safe-optimal stochastic shortcut
+settings, while matched neural Bellman and support-only transitive critics fail.
 \end{abstract}
 
 \section{Introduction}
@@ -139,6 +142,9 @@ Our contributions are:
     \item We give learned high-level module diagnostics showing that
     raw-observation transition and tie-preserving policy heads preserve the
     AntMaze hard-task gain over matched Bellman.
+    \item We include a controlled learned-critic diagnostic in which an MLP
+    stochastic-TRL critic solves stochastic long-horizon shortcut tasks while
+    neural Bellman and support-only critics fail under the same budget.
 \end{enumerate}
 
 \section{Problem Setting}
@@ -292,6 +298,14 @@ path length is 127, Stochastic TRL reaches 1.000 success after 7 sweeps;
 Bellman remains at portal-rate success through 120 sweeps and first reaches
 1.000 success at 126 sweeps (Table~\ref{tab:grid-budget}).
 
+We also train small neural critics on finite stochastic shortcut MDPs from
+offline empirical transitions. This controlled screen keeps the same
+safe-optimal shortcut regimes but replaces table values with MLP critics.
+Neural Stochastic TRL solves every safe-optimal setting and makes the correct
+safe first-action decision in all 12 conditions, while matched neural Bellman
+propagates too slowly and neural support TRL over-composes the lucky risky
+shortcut (Table~\ref{tab:neural-shortcut}).
+
 \begin{table}[t]
 \centering
 \caption{Planning-budget curve on the hardest 16x8 stochastic grid. Stochastic
@@ -307,6 +321,25 @@ Bellman & 120 & 0.048 & 0.000 & 1.000\\
 Bellman & 126 & 1.000 & 1.000 & 0.000\\
 Stochastic TRL & 6 & 0.048 & 0.000 & 1.000\\
 Stochastic TRL & 7 & 1.000 & 1.000 & 0.000\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Learned finite-MDP critic screen on stochastic risky-shortcut tasks.
+Rows average over 12 safe-optimal settings with safe lengths 16, 32, and 64.
+Source: \texttt{neural\_shortcut\_phase.csv}.}
+\label{tab:neural-shortcut}
+\begin{tabular}{lrrr}
+\toprule
+Method & Success & Correct decision & Risky action\\
+\midrule
+Neural Bellman TD & 0.027 & 0.583 & 0.417\\
+Neural Stochastic TRL & 1.000 & 1.000 & 0.000\\
+Neural Support TRL & 0.093 & 0.000 & 1.000\\
+Table Stochastic TRL & 1.000 & 1.000 & 0.000\\
+Table full Bellman & 1.000 & 1.000 & 0.000\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -592,6 +625,19 @@ screen. Table~\ref{tab:pointmaze-prev-policy-head} shows that an explicit
 previous high-level action is enough to make a conventional single-label policy
 head recover the same behavior.
 
+Table~\ref{tab:pointmaze-qhead-critic} tests the same PointMaze high-level MDP
+with a learned joint-action critic rather than only a policy head. The critic
+maps raw-observation state-goal features and state/goal identifiers to all four
+high-level action values. We first generate a matched-budget stochastic
+transitive target from the learned transition model, then fit the critic to that
+generated target. This learned critic recovers the exact-model policy on both
+teleport variants; a matched-budget Bellman TD critic with the same
+architecture remains low. With the same proportional PointMaze controller used
+in the topology planner, the generated-target q-head also reaches 0.933
+all-task real-environment success across evaluation seeds 0, 1, and 2, and
+1.00 success on hard tasks 4 and 5 in the seed-0 screen, for both teleport
+variants. Fully self-bootstrapped neural fitted iteration remains a limitation.
+
 \begin{table}[t]
 \centering
 \caption{PointMaze tie-preserving policy-head screen. Source:
@@ -605,6 +651,25 @@ Environment & Control head & Evaluation & Bellman & Stochastic & Full & Action\\
 \midrule
 PointMaze navigate & raw-observation tie-policy MLP & seed 0, all tasks, 20 episodes/task & 0.530 & 0.980 & 0.980 & 0.982\\
 PointMaze stitch & raw-observation tie-policy MLP & seed 0, all tasks, 20 episodes/task & 0.530 & 0.980 & 0.980 & 0.978\\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{PointMaze joint-action critic diagnostic. Exact model evaluation over
+all five tasks with a learned raw-observation transition head; the verifier also
+checks matching multi-seed and hard-slice real-environment rollout rows.}
+\label{tab:pointmaze-qhead-critic}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrr}
+\toprule
+Environment & Q-head & Q-head & Table & Table & Q-head action\\
+ & Bellman TD & Stochastic target & Bellman & Stochastic & agreement\\
+\midrule
+PointMaze navigate & 0.066 & 1.000 & 0.476 & 1.000 & 0.966\\
+PointMaze stitch & 0.072 & 1.000 & 0.481 & 1.000 & 0.959\\
 \bottomrule
 \end{tabular}%
 }

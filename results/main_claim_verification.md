@@ -77,6 +77,18 @@ Checks: direct final-goal actor rows match raw OGBench eval CSVs and remain at o
 
 Checks: generated fast-profile rows match raw profile CSVs, recommended screens use action repeat 1, recommended AntMaze hard-slice stochastic TRL success remains at least 0.90 with at least 0.35-0.40 improvement over matched Bellman, and the action-repeat-2 ablation remains below the repeat-1 two-episode baseline.
 
+## Current Fast-Hard Screen Check
+
+| screen | matched | support_trl | stochastic_trl | full | improvement | sto_eval_seconds |
+| --- | --- | --- | --- | --- | --- | --- |
+| PointMaze exact hard slice | 0.478 | 0.507 | 1.000 | 1.000 | 0.522 | 0.01 |
+| PointMaze navigate all tasks | 0.200 | 0.400 | 1.000 | 1.000 | 0.800 | 0.13 |
+| PointMaze stitch all tasks | 0.200 | 0.400 | 1.000 | 1.000 | 0.800 | 0.16 |
+| AntMaze navigate hard slice | 0.400 |  | 0.900 | 0.900 | 0.500 | 4.55 |
+| AntMaze stitch hard slice | 0.600 |  | 1.000 | 1.000 | 0.400 | 4.31 |
+
+Checks: generated current fast-hard rows match raw CSVs, use seed 0 and the expected task/episode scope, keep matched and stochastic TRL at 6 sweeps, use the 180-sweep full-Bellman reference, keep stochastic TRL at the screen-specific high-success threshold, and match full Bellman.
+
 ## AntMaze Deterministic-Support Ablation Check
 
 | env | matched | support_trl | stochastic_trl | full | sto_minus_support |

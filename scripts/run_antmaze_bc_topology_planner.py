@@ -38,6 +38,10 @@ import optax
 from flax import serialization
 from flax.training import train_state
 
+from agents.sto_trl_neural_toy import (
+    NeuralToyConfig,
+    fit_action_head_neural_critic_to_target,
+)
 from envs.env_utils import make_env_and_datasets
 from run_antmaze_topology_planner import ACTION_DELTAS, Topology, build_dataset_topology, nearest_state
 from sto_trl.learners import train_model_value, train_support_transitive_value
@@ -101,6 +105,7 @@ class BCPolicy:
     stats: FeatureStats
     metadata: dict[str, Any] = field(default_factory=dict)
     _apply_action: Any = field(init=False, repr=False)
+    _apply_action_fused: Any = field(init=False, repr=False)
     _numpy_layers: Any = field(init=False, repr=False)
     _numpy_final: Any = field(init=False, repr=False)
 
@@ -108,7 +113,39 @@ class BCPolicy:
         self._apply_action = jax.jit(
             lambda feats: self.state.apply_fn({"params": self.state.params}, feats)
         )
+        self._apply_action_fused = self._build_fused_jax_action()
         self._numpy_layers, self._numpy_final = self._extract_numpy_params()
+
+    def _build_fused_jax_action(self):
+        obs_mean = jnp.asarray(self.stats.obs_mean, dtype=jnp.float32)
+        obs_std = jnp.asarray(self.stats.obs_std, dtype=jnp.float32)
+        xy_mean = jnp.asarray(self.stats.xy_mean, dtype=jnp.float32)
+        xy_std = jnp.asarray(self.stats.xy_std, dtype=jnp.float32)
+        rel_scale = jnp.asarray(self.stats.rel_scale, dtype=jnp.float32)
+        goal_representation = self.stats.goal_representation
+        apply_fn = self.state.apply_fn
+        params = self.state.params
+
+        @jax.jit
+        def apply(obs: jax.Array, goal: jax.Array) -> jax.Array:
+            obs_batch = jnp.asarray(obs, dtype=jnp.float32)[None, :]
+            goal_batch = jnp.asarray(goal, dtype=jnp.float32)[None, :]
+            obs_norm = jnp.clip((obs_batch - obs_mean[None, :]) / obs_std[None, :], -10.0, 10.0)
+            if goal_representation == "full":
+                goal_xy = goal_batch[:, :2]
+                goal_norm = jnp.clip((goal_batch - obs_mean[None, :]) / obs_std[None, :], -10.0, 10.0)
+            else:
+                goal_xy = goal_batch
+                goal_norm = jnp.clip((goal_xy - xy_mean[None, :]) / xy_std[None, :], -10.0, 10.0)
+            delta = goal_xy - obs_batch[:, :2]
+            rel = jnp.clip(delta / rel_scale, -10.0, 10.0)
+            dist = jnp.linalg.norm(delta, axis=1, keepdims=True)
+            unit = delta / jnp.maximum(dist, 1e-6)
+            dist_feat = jnp.clip(dist / rel_scale, 0.0, 10.0)
+            feats = jnp.concatenate([obs_norm, goal_norm, rel, unit, dist_feat], axis=1)
+            return apply_fn({"params": params}, feats)
+
+        return apply
 
     def _extract_numpy_params(self) -> tuple[list[tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None]], tuple[np.ndarray, np.ndarray]]:
         params = serialization.to_state_dict(jax.device_get(self.state.params))
@@ -159,6 +196,8 @@ class BCPolicy:
         feats = make_features_np(obs_batch, goal_batch, self.stats)
         if backend == "jax":
             action = self._apply_action(jnp.asarray(feats))
+        elif backend == "jax_fused":
+            action = self._apply_action_fused(jnp.asarray(obs, dtype=jnp.float32), jnp.asarray(goal, dtype=jnp.float32))
         elif backend == "numpy":
             action = self._apply_action_np(feats)
         else:
@@ -927,6 +966,32 @@ def value_stats_from_payload(payload: dict[str, float]) -> ValueFitStats:
     )
 
 
+def cached_value_stats(stats: ValueFitStats) -> ValueFitStats:
+    return ValueFitStats(
+        loss=stats.loss,
+        mse=stats.mse,
+        max_abs=stats.max_abs,
+        action_agreement=stats.action_agreement,
+        train_seconds=0.0,
+    )
+
+
+def value_supervision_cache_key(
+    value_model: str,
+    target_q: np.ndarray,
+    n_actions: int,
+    tie_tol: float,
+) -> str:
+    if value_model == "raw_obs_tie_policy_mlp":
+        max_q = target_q.max(axis=1, keepdims=True)
+        labels = (target_q >= (max_q - tie_tol)).astype(np.bool_)
+        return f"{value_model}:tol={tie_tol}:{array_digest(labels)}"
+    if value_model == "raw_obs_prev_policy_mlp":
+        labels = previous_action_policy_labels(target_q, n_actions)
+        return f"{value_model}:{array_digest(labels)}"
+    return f"{value_model}:{array_digest(target_q)}"
+
+
 def stable_softmax(logits: np.ndarray) -> np.ndarray:
     shifted = logits - np.max(logits, axis=-1, keepdims=True)
     exp = np.exp(shifted)
@@ -1671,11 +1736,182 @@ def fit_raw_obs_prev_policy_mlp(
     return pred_scores, stats
 
 
+@jax.jit
+def prev_qhead_mlp_train_step(
+    state: train_state.TrainState,
+    feats: jax.Array,
+    targets: jax.Array,
+    labels: jax.Array,
+    mask: jax.Array,
+    rank_ce_weight: float,
+):
+    def loss_fn(params):
+        logits = state.apply_fn({"params": params}, feats)
+        preds = jax.nn.sigmoid(logits)
+        row_loss = jnp.mean((preds - targets) ** 2, axis=-1)
+        value_loss = jnp.sum(row_loss * mask) / jnp.maximum(jnp.sum(mask), 1.0)
+        ce = optax.softmax_cross_entropy_with_integer_labels(logits, labels)
+        rank_loss = jnp.sum(ce * mask) / jnp.maximum(jnp.sum(mask), 1.0)
+        return value_loss + rank_ce_weight * rank_loss
+
+    loss, grads = jax.value_and_grad(loss_fn)(state.params)
+    return state.apply_gradients(grads=grads), loss
+
+
+def prev_qhead_metrics(pred_q: np.ndarray, target_q: np.ndarray, n_actions: int) -> ValueFitStats:
+    labels = previous_action_policy_labels(target_q, n_actions)
+    pred_actions = np.argmax(pred_q, axis=2)
+    mask = np.broadcast_to(~np.eye(target_q.shape[0], dtype=bool)[:, None, :], labels.shape)
+    action_agreement = float(np.mean((pred_actions == labels)[mask])) if np.any(mask) else 1.0
+    target = np.broadcast_to(
+        target_q[:, None, :, :],
+        pred_q.shape,
+    )
+    diff = pred_q - target
+    return ValueFitStats(
+        loss=float(np.mean(diff * diff)),
+        mse=float(np.mean(diff * diff)),
+        max_abs=float(np.max(np.abs(diff))),
+        action_agreement=action_agreement,
+        train_seconds=0.0,
+    )
+
+
+def fit_raw_obs_prev_qhead_mlp(
+    env,
+    train: dict[str, np.ndarray],
+    topology: Topology,
+    target_q: np.ndarray,
+    steps: int,
+    lr: float,
+    seed: int,
+    hidden_dims: tuple[int, ...],
+    log_interval: int,
+    method: str,
+) -> tuple[np.ndarray, ValueFitStats]:
+    features = build_raw_obs_prev_policy_features(env, train, topology)
+    labels = previous_action_policy_labels(target_q, topology.n_actions)
+    target_rows = np.broadcast_to(
+        target_q.transpose(0, 2, 1)[:, None, :, :],
+        (topology.n_states, topology.n_actions + 1, topology.n_states, topology.n_actions),
+    ).astype(np.float32)
+    action_mask = np.broadcast_to(
+        (~np.eye(topology.n_states, dtype=bool))[:, None, :],
+        labels.shape,
+    ).astype(np.float32)
+    state = create_highlevel_policy_train_state(
+        seed,
+        int(features.shape[-1]),
+        topology.n_actions,
+        hidden_dims,
+        lr,
+    )
+    feats_jax = jnp.asarray(features.reshape(-1, features.shape[-1]), dtype=jnp.float32)
+    targets_jax = jnp.asarray(target_rows.reshape(-1, topology.n_actions), dtype=jnp.float32)
+    labels_jax = jnp.asarray(labels.reshape(-1), dtype=jnp.int32)
+    mask_jax = jnp.asarray(action_mask.reshape(-1), dtype=jnp.float32)
+    rank_ce_weight = 1.0
+    start = time.perf_counter()
+    pred_q = prev_policy_mlp_predict_probs(state, features, topology.n_states, topology.n_actions)
+    for step in range(1, steps + 1):
+        state, loss = prev_qhead_mlp_train_step(
+            state,
+            feats_jax,
+            targets_jax,
+            labels_jax,
+            mask_jax,
+            rank_ce_weight,
+        )
+        if log_interval > 0 and (step == 1 or step % log_interval == 0 or step == steps):
+            logits = state.apply_fn({"params": state.params}, feats_jax)
+            pred_q = np.asarray(jax.nn.sigmoid(logits), dtype=np.float64).reshape(
+                topology.n_states,
+                topology.n_actions + 1,
+                topology.n_states,
+                topology.n_actions,
+            ).transpose(0, 1, 3, 2)
+            metrics = prev_qhead_metrics(pred_q, target_q, topology.n_actions)
+            print(
+                f"[prev-qhead-mlp] method={method} step={step} mse={metrics.mse:.6f} "
+                f"max_abs={metrics.max_abs:.6f} action_agree={metrics.action_agreement:.3f} "
+                f"loss={float(loss):.6f}",
+                flush=True,
+            )
+    logits = state.apply_fn({"params": state.params}, feats_jax)
+    pred_q = np.asarray(jax.nn.sigmoid(logits), dtype=np.float64).reshape(
+        topology.n_states,
+        topology.n_actions + 1,
+        topology.n_states,
+        topology.n_actions,
+    ).transpose(0, 1, 3, 2)
+    for goal_state in range(topology.n_states):
+        pred_q[goal_state, :, :, goal_state] = 1.0
+    stats = prev_qhead_metrics(pred_q, target_q, topology.n_actions)
+    stats.train_seconds = time.perf_counter() - start
+    stats.loss = float(loss)
+    return pred_q, stats
+
+
+def fit_raw_obs_qhead_mlp(
+    env,
+    train: dict[str, np.ndarray],
+    topology: Topology,
+    transitions: np.ndarray,
+    target_q: np.ndarray,
+    steps: int,
+    lr: float,
+    seed: int,
+    hidden_dims: tuple[int, ...],
+    log_interval: int,
+    method: str,
+) -> tuple[np.ndarray, ValueFitStats]:
+    if log_interval > 0:
+        print(
+            f"[qhead-mlp] method={method} fitting target for {steps} steps "
+            f"hidden={hidden_dims} lr={lr}",
+            flush=True,
+        )
+    features = build_raw_obs_policy_features(env, train, topology).reshape(
+        topology.n_states * topology.n_states,
+        -1,
+    )
+    config = NeuralToyConfig(
+        hidden_dims=hidden_dims,
+        lr=lr,
+        warmup_steps=0,
+        steps_per_iter=steps,
+        positive_weight=4.0,
+        diag_weight=4.0,
+        rank_ce_weight=0.05,
+        log_interval=0,
+    )
+    fitted_q, stats = fit_action_head_neural_critic_to_target(
+        transitions,
+        target_q,
+        seed,
+        config,
+        features,
+        steps,
+    )
+    value_stats = value_metrics(fitted_q, target_q)
+    value_stats.loss = float(stats.final_loss)
+    value_stats.train_seconds = float(stats.train_seconds)
+    if log_interval > 0:
+        print(
+            f"[qhead-mlp] method={method} mse={value_stats.mse:.6f} "
+            f"max_abs={value_stats.max_abs:.6f} action_agree={value_stats.action_agreement:.3f} "
+            f"loss={value_stats.loss:.6f}",
+            flush=True,
+        )
+    return fitted_q, value_stats
+
+
 def cached_value_model_fit(
     env_name: str,
     env,
     train: dict[str, np.ndarray],
     topology: Topology,
+    transitions: np.ndarray,
     value_model: str,
     method: str,
     target_q: np.ndarray,
@@ -1752,6 +1988,33 @@ def cached_value_model_fit(
         )
     elif value_model == "raw_obs_prev_policy_mlp":
         fitted_q, value_stats = fit_raw_obs_prev_policy_mlp(
+            env,
+            train,
+            topology,
+            target_q,
+            steps,
+            lr,
+            seed,
+            hidden_dims,
+            log_interval,
+            method,
+        )
+    elif value_model == "raw_obs_qhead_mlp":
+        fitted_q, value_stats = fit_raw_obs_qhead_mlp(
+            env,
+            train,
+            topology,
+            transitions,
+            target_q,
+            steps,
+            lr,
+            seed,
+            hidden_dims,
+            log_interval,
+            method,
+        )
+    elif value_model == "raw_obs_prev_qhead_mlp":
+        fitted_q, value_stats = fit_raw_obs_prev_qhead_mlp(
             env,
             train,
             topology,
@@ -1887,7 +2150,13 @@ def main() -> None:
     parser.add_argument("--transition-log-interval", type=int, default=500)
     parser.add_argument(
         "--value-model",
-        choices=["table", "raw_obs_tie_policy_mlp", "raw_obs_prev_policy_mlp"],
+        choices=[
+            "table",
+            "raw_obs_tie_policy_mlp",
+            "raw_obs_prev_policy_mlp",
+            "raw_obs_qhead_mlp",
+            "raw_obs_prev_qhead_mlp",
+        ],
         default="table",
     )
     parser.add_argument("--value-steps", type=int, default=2_000)
@@ -1918,11 +2187,14 @@ def main() -> None:
     parser.add_argument("--eval-action-repeat", type=int, default=1)
     parser.add_argument(
         "--policy-eval-backend",
-        choices=["jax", "numpy"],
+        choices=["jax", "jax_fused", "numpy"],
         default="jax",
         help=(
-            "Use jax for exact claimed evaluations. The numpy backend is faster but can "
-            "change long-horizon MuJoCo rollouts through tiny numerical drift."
+            "Use jax for exact claimed evaluations. jax_fused is a diagnostic "
+            "backend that compiles feature construction and policy application "
+            "together, but it is not promoted for claims because tiny differences "
+            "changed hard-task MuJoCo outcomes. The numpy backend is faster but "
+            "can also change long-horizon rollouts through tiny numerical drift."
         ),
     )
     parser.add_argument("--max-episode-steps", type=int, default=None)
@@ -2065,6 +2337,7 @@ def main() -> None:
     value_fit_by_method: dict[str, ValueFitStats] = {}
     value_cache_hit_by_method: dict[str, int] = {}
     value_cache: dict[tuple[int, bool], np.ndarray] = {}
+    value_supervision_cache: dict[str, tuple[np.ndarray, ValueFitStats]] = {}
     value_start = time.perf_counter()
     for method in dict.fromkeys(args.methods):
         if method == "support_trl_matched":
@@ -2076,49 +2349,7 @@ def main() -> None:
             if cache_key not in value_cache:
                 value_cache[cache_key] = train_model_value(planning_transitions, args.gamma, value_iters, stochastic)
             table_q = value_cache[cache_key]
-        if args.value_model == "raw_obs_tie_policy_mlp":
-            fitted_q, value_stats, cache_hit = cached_value_model_fit(
-                args.env_name,
-                env,
-                train,
-                topology,
-                args.value_model,
-                method,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                args.value_tie_tol,
-                args.cache_dir,
-                use_cache,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-            value_cache_hit_by_method[method] = cache_hit
-        elif args.value_model == "raw_obs_prev_policy_mlp":
-            fitted_q, value_stats, cache_hit = cached_value_model_fit(
-                args.env_name,
-                env,
-                train,
-                topology,
-                args.value_model,
-                method,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                args.value_tie_tol,
-                args.cache_dir,
-                use_cache,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-            value_cache_hit_by_method[method] = cache_hit
-        else:
+        if args.value_model == "table":
             q_by_method[method] = table_q
             value_fit_by_method[method] = ValueFitStats(
                 loss=0.0,
@@ -2128,6 +2359,52 @@ def main() -> None:
                 train_seconds=0.0,
             )
             value_cache_hit_by_method[method] = 0
+        elif args.value_model in {
+            "raw_obs_tie_policy_mlp",
+            "raw_obs_prev_policy_mlp",
+            "raw_obs_qhead_mlp",
+            "raw_obs_prev_qhead_mlp",
+        }:
+            supervision_key = value_supervision_cache_key(
+                args.value_model,
+                table_q,
+                topology.n_actions,
+                args.value_tie_tol,
+            )
+            if supervision_key in value_supervision_cache:
+                fitted_q, source_stats = value_supervision_cache[supervision_key]
+                value_stats = cached_value_stats(source_stats)
+                cache_hit = 1
+                print(
+                    f"[value-cache] supervision hit method={method} "
+                    f"model={args.value_model} key={supervision_key[:32]}",
+                    flush=True,
+                )
+            else:
+                fitted_q, value_stats, cache_hit = cached_value_model_fit(
+                    args.env_name,
+                    env,
+                    train,
+                    topology,
+                    planning_transitions,
+                    args.value_model,
+                    method,
+                    table_q,
+                    args.value_steps,
+                    args.value_mlp_lr,
+                    args.value_seed,
+                    tuple(args.value_hidden_dims),
+                    args.value_log_interval,
+                    args.value_tie_tol,
+                    args.cache_dir,
+                    use_cache,
+                )
+                value_supervision_cache[supervision_key] = (fitted_q, value_stats)
+            q_by_method[method] = fitted_q
+            value_fit_by_method[method] = value_stats
+            value_cache_hit_by_method[method] = cache_hit
+        else:
+            raise ValueError(f"unknown value model {args.value_model}")
         iters_by_method[method] = value_iters
     value_seconds = time.perf_counter() - value_start
     print(f"[time] value_training seconds={value_seconds:.2f}", flush=True)

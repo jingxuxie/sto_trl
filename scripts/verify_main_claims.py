@@ -21,6 +21,7 @@ POINTMAZE_LEARNED_TRANSITION_TABLE = TABLE_DIR / "pointmaze_learned_transition.c
 POINTMAZE_BC_CONTROLLER_TABLE = TABLE_DIR / "pointmaze_learned_controller_ep20_seed012.csv"
 CONTROLLER_EXECUTION_ISOLATION_TABLE = TABLE_DIR / "controller_execution_isolation.csv"
 FAST_EVAL_PROFILE_TABLE = TABLE_DIR / "fast_eval_profile.csv"
+CURRENT_FAST_HARD_TABLE = TABLE_DIR / "current_fast_hard_screen.csv"
 ANTMAZE_SUPPORT_ABLATION_TABLE = TABLE_DIR / "antmaze_support_ablation_ep5_seed0_task45.csv"
 POINTMAZE_TIE_POLICY_HEAD_TABLE = TABLE_DIR / "pointmaze_tie_policy_head_ep20_seed0.csv"
 POINTMAZE_PREV_POLICY_HEAD_TABLE = TABLE_DIR / "pointmaze_rawobs_transition_prev_policy_head_ep20_seed0.csv"
@@ -250,6 +251,68 @@ FAST_EVAL_PROFILE_SPECS = [
         "screen": "antmaze stitch hard slice",
         "role": "action-repeat ablation",
         "path": RESULTS / "antmaze_stitch_fast_profile_repeat2_ep2_seed0_task45.csv",
+    },
+]
+CURRENT_FAST_HARD_SPECS = [
+    {
+        "screen": "PointMaze exact hard slice",
+        "path": RESULTS / "pointmaze_topology_stitch_task45_fast_exact.csv",
+        "eval_mode": "model",
+        "task_ids": "4,5",
+        "episodes": "1",
+        "min_sto": 0.99,
+        "max_matched": 0.50,
+        "min_improvement": 0.50,
+        "needs_support": True,
+        "check_full_match": True,
+    },
+    {
+        "screen": "PointMaze navigate all tasks",
+        "path": RESULTS / "pointmaze_topology_navigate_all_env_seed0_ep1.csv",
+        "eval_mode": "env",
+        "task_ids": "all",
+        "episodes": "1",
+        "min_sto": 0.99,
+        "max_matched": 0.25,
+        "min_improvement": 0.75,
+        "needs_support": True,
+        "check_full_match": True,
+    },
+    {
+        "screen": "PointMaze stitch all tasks",
+        "path": RESULTS / "pointmaze_topology_stitch_all_env_seed0_ep1.csv",
+        "eval_mode": "env",
+        "task_ids": "all",
+        "episodes": "1",
+        "min_sto": 0.99,
+        "max_matched": 0.25,
+        "min_improvement": 0.75,
+        "needs_support": True,
+        "check_full_match": True,
+    },
+    {
+        "screen": "AntMaze navigate hard slice",
+        "path": RESULTS / "antmaze_navigate_hard_task45_ep5_seed0_current.csv",
+        "eval_mode": "env",
+        "task_ids": "4,5",
+        "episodes": "5",
+        "min_sto": 0.90,
+        "max_matched": 0.45,
+        "min_improvement": 0.45,
+        "needs_support": False,
+        "check_full_match": True,
+    },
+    {
+        "screen": "AntMaze stitch hard slice",
+        "path": RESULTS / "antmaze_stitch_hard_task45_ep5_seed0_current.csv",
+        "eval_mode": "env",
+        "task_ids": "4,5",
+        "episodes": "5",
+        "min_sto": 0.99,
+        "max_matched": 0.65,
+        "min_improvement": 0.35,
+        "needs_support": False,
+        "check_full_match": True,
     },
 ]
 ANTMAZE_SUPPORT_ABLATION_SPECS = [
@@ -1219,6 +1282,121 @@ def verify_fast_eval_profile(errors: list[str]) -> list[dict[str, str]]:
                 "fast-profile action-repeat ablation is not lower than the repeat-1 baseline; "
                 "re-check the unsafe-action-repeat conclusion"
             )
+    return verified
+
+
+def verify_current_fast_hard_screen(errors: list[str]) -> list[dict[str, str]]:
+    verified: list[dict[str, str]] = []
+    if not CURRENT_FAST_HARD_TABLE.exists():
+        errors.append(f"Current fast-hard screen: missing table {CURRENT_FAST_HARD_TABLE.relative_to(ROOT)}")
+        return verified
+
+    table_rows = read_rows(CURRENT_FAST_HARD_TABLE)
+    by_source = {row["source"]: row for row in table_rows}
+    for spec in CURRENT_FAST_HARD_SPECS:
+        path = Path(spec["path"])
+        source = str(path.relative_to(ROOT))
+        if source not in by_source:
+            errors.append(f"{spec['screen']}: missing current fast-hard table row for {source}")
+            continue
+        table = by_source[source]
+        if not path.exists():
+            errors.append(f"{spec['screen']}: missing current fast-hard source {source}")
+            continue
+        source_rows = read_rows(path)
+        by_method = {row["method"]: row for row in source_rows}
+        required = {"bellman_matched", "sto_trl_matched", "bellman_full"}
+        if bool(spec["needs_support"]):
+            required.add("support_trl_matched")
+        if not required.issubset(by_method):
+            errors.append(f"{source}: missing current fast-hard methods {sorted(required - set(by_method))}")
+            continue
+
+        matched_row = by_method["bellman_matched"]
+        sto_row = by_method["sto_trl_matched"]
+        full_row = by_method["bellman_full"]
+        matched = float(matched_row["overall_success"])
+        sto = float(sto_row["overall_success"])
+        full = float(full_row["overall_success"])
+        support = (
+            float(by_method["support_trl_matched"]["overall_success"])
+            if "support_trl_matched" in by_method
+            else None
+        )
+
+        raw_task_ids = distinct_values(source_rows, "task_ids")
+        raw_episodes = distinct_values(source_rows, "episodes_per_task")
+        raw_seed = distinct_values(source_rows, "seed")
+        raw_eval_mode = distinct_values(source_rows, "eval_mode") or {str(spec["eval_mode"])}
+        if raw_task_ids != {str(spec["task_ids"])}:
+            errors.append(f"{source}: task_ids {sorted(raw_task_ids)} do not match {spec['task_ids']}")
+        if raw_episodes != {str(spec["episodes"])}:
+            errors.append(f"{source}: episodes_per_task {sorted(raw_episodes)} do not match {spec['episodes']}")
+        if raw_seed != {"0"}:
+            errors.append(f"{source}: seed {sorted(raw_seed)} does not match 0")
+        if raw_eval_mode != {str(spec["eval_mode"])}:
+            errors.append(f"{source}: eval_mode {sorted(raw_eval_mode)} does not match {spec['eval_mode']}")
+        if "policy_eval_backend" in sto_row and sto_row["policy_eval_backend"] != "jax":
+            errors.append(f"{source}: current AntMaze hard screen must use JAX policy backend")
+        if sto_row.get("eval_action_repeat", "1") != "1":
+            errors.append(f"{source}: current hard screen must use action repeat 1")
+        if sto_row.get("model_rollout_mode", "exact") not in {"", "exact"}:
+            errors.append(f"{source}: current model proxy must use exact rollout mode")
+
+        matched_sweeps = int(float(matched_row["iters"]))
+        sto_sweeps = int(float(sto_row["iters"]))
+        full_sweeps = int(float(full_row["iters"]))
+        assert_equal(errors, table["screen"], spec["screen"], f"{source} screen")
+        assert_equal(errors, table["env"], sto_row["env"], f"{source} env")
+        assert_equal(errors, table["eval_mode"], spec["eval_mode"], f"{source} eval_mode")
+        assert_equal(errors, table["task_ids"], spec["task_ids"], f"{source} task_ids")
+        assert_equal(errors, int(table["matched_sweeps"]), matched_sweeps, f"{source} matched_sweeps")
+        assert_equal(errors, sto_sweeps, matched_sweeps, f"{source} stochastic sweeps")
+        assert_close(errors, float(table["bellman_matched"]), round(matched, 3), f"{source} matched")
+        assert_close(errors, float(table["stochastic_trl"]), round(sto, 3), f"{source} stochastic")
+        assert_close(errors, float(table["bellman_full"]), round(full, 3), f"{source} full")
+        assert_close(errors, float(table["sto_minus_matched"]), round(sto - matched, 3), f"{source} improvement")
+        if support is None:
+            if table["support_trl"] != "":
+                errors.append(f"{source}: support TRL should be blank")
+        else:
+            assert_close(errors, float(table["support_trl"]), round(support, 3), f"{source} support")
+        setup_seconds = sto_row.get("setup_seconds", "")
+        if setup_seconds:
+            assert_close(errors, float(table["setup_seconds"]), round(float(setup_seconds), 2), f"{source} setup")
+        elif table["setup_seconds"] != "":
+            errors.append(f"{source}: setup seconds should be blank")
+        assert_close(
+            errors,
+            float(table["sto_eval_seconds"]),
+            round(float(sto_row["eval_seconds"]), 2),
+            f"{source} stochastic eval seconds",
+        )
+
+        if matched_sweeps != 6 or sto_sweeps != 6:
+            errors.append(f"{source}: current hard-screen matched and stochastic sweeps are not 6")
+        if full_sweeps != 180:
+            errors.append(f"{source}: current hard-screen full Bellman sweeps are not 180")
+        if matched > float(spec["max_matched"]):
+            errors.append(f"{source}: matched Bellman exceeds threshold ({matched:.3f})")
+        if sto < float(spec["min_sto"]):
+            errors.append(f"{source}: stochastic TRL below threshold ({sto:.3f})")
+        if sto - matched < float(spec["min_improvement"]):
+            errors.append(f"{source}: stochastic improvement below threshold ({sto - matched:.3f})")
+        if bool(spec["check_full_match"]) and abs(sto - full) > 1e-12:
+            errors.append(f"{source}: stochastic TRL does not match full Bellman")
+
+        verified.append(
+            {
+                "screen": str(spec["screen"]),
+                "matched": fmt(matched),
+                "support_trl": "" if support is None else fmt(support),
+                "stochastic_trl": fmt(sto),
+                "full": fmt(full),
+                "improvement": fmt(sto - matched),
+                "sto_eval_seconds": f"{float(sto_row['eval_seconds']):.2f}",
+            }
+        )
     return verified
 
 
@@ -3075,6 +3253,7 @@ def main() -> int:
     pointmaze_bc_verified = verify_pointmaze_bc_controller(errors)
     controller_iso_verified = verify_controller_execution_isolation(errors)
     fast_eval_verified = verify_fast_eval_profile(errors)
+    current_fast_verified = verify_current_fast_hard_screen(errors)
     antmaze_support_verified = verify_antmaze_support_ablation(errors)
     pointmaze_tie_verified = verify_pointmaze_tie_policy_head(errors)
     pointmaze_prev_verified = verify_pointmaze_prev_policy_head(errors)
@@ -3200,6 +3379,23 @@ def main() -> int:
         ),
         "",
         "Checks: generated fast-profile rows match raw profile CSVs, recommended screens use action repeat 1, recommended AntMaze hard-slice stochastic TRL success remains at least 0.90 with at least 0.35-0.40 improvement over matched Bellman, and the action-repeat-2 ablation remains below the repeat-1 two-episode baseline.",
+        "",
+        "## Current Fast-Hard Screen Check",
+        "",
+        markdown_table(
+            [
+                "screen",
+                "matched",
+                "support_trl",
+                "stochastic_trl",
+                "full",
+                "improvement",
+                "sto_eval_seconds",
+            ],
+            current_fast_verified,
+        ),
+        "",
+        "Checks: generated current fast-hard rows match raw CSVs, use seed 0 and the expected task/episode scope, keep matched and stochastic TRL at 6 sweeps, use the 180-sweep full-Bellman reference, keep stochastic TRL at the screen-specific high-success threshold, and match full Bellman.",
         "",
         "## AntMaze Deterministic-Support Ablation Check",
         "",

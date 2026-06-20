@@ -299,36 +299,35 @@ def exact_model_task_success(
 
     n_prev = topology.n_actions + 1
     none_prev = topology.n_actions
-    dist = np.zeros((topology.n_states, n_prev), dtype=np.float64)
-    dist[init_state, none_prev] = 1.0
+    n_aug = topology.n_states * n_prev
+    dist = np.zeros(n_aug, dtype=np.float64)
+    dist[init_state * n_prev + none_prev] = 1.0
     success = 0.0
     expected_length = 0.0
-    nonzero_next = [
-        [
-            np.nonzero(topology.transitions[state, action_id] > 0.0)[0]
-            for action_id in range(topology.n_actions)
-        ]
-        for state in range(topology.n_states)
-    ]
+
+    nonterminal_transition = np.zeros((n_aug, n_aug), dtype=np.float64)
+    hit_prob = np.zeros(n_aug, dtype=np.float64)
+    for state in range(topology.n_states):
+        for prev in range(n_prev):
+            previous_action = None if prev == none_prev else int(prev)
+            action_id = greedy_action(q, state, goal_state, previous_action)
+            row = state * n_prev + prev
+            probs = topology.transitions[state, action_id]
+            hit_prob[row] = probs[goal_state]
+            next_states = np.nonzero(probs > 0.0)[0]
+            for next_state in next_states:
+                if int(next_state) == goal_state:
+                    continue
+                col = int(next_state) * n_prev + action_id
+                nonterminal_transition[row, col] += probs[int(next_state)]
 
     for _step in range(max_steps):
         survival_mass = float(np.sum(dist))
         if survival_mass <= 1e-15:
             break
         expected_length += survival_mass
-        next_dist = np.zeros_like(dist)
-        active_states, active_prev = np.nonzero(dist > 0.0)
-        for state, prev in zip(active_states, active_prev):
-            mass = dist[state, prev]
-            previous_action = None if prev == none_prev else int(prev)
-            action_id = greedy_action(q, int(state), goal_state, previous_action)
-            for next_state in nonzero_next[int(state)][action_id]:
-                prob = topology.transitions[int(state), action_id, int(next_state)]
-                if int(next_state) == goal_state:
-                    success += float(mass * prob)
-                else:
-                    next_dist[int(next_state), action_id] += mass * prob
-        dist = next_dist
+        success += float(dist @ hit_prob)
+        dist = dist @ nonterminal_transition
     return float(np.clip(success, 0.0, 1.0)), float(expected_length)
 
 

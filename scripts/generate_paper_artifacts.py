@@ -347,6 +347,33 @@ HARD_TASK_STRESS_SPECS = [
         RESULTS / "antmaze_stitch_hard_task45_ep10_seed0_fastfocus.csv",
     ),
 ]
+CURRENT_FAST_HARD_SPECS = [
+    {
+        "screen": "PointMaze exact hard slice",
+        "eval_setting": "model exact, tasks 4-5, seed 0",
+        "path": RESULTS / "pointmaze_topology_stitch_task45_fast_exact.csv",
+    },
+    {
+        "screen": "PointMaze navigate all tasks",
+        "eval_setting": "real env, all tasks, seed 0, 1 episode/task",
+        "path": RESULTS / "pointmaze_topology_navigate_all_env_seed0_ep1.csv",
+    },
+    {
+        "screen": "PointMaze stitch all tasks",
+        "eval_setting": "real env, all tasks, seed 0, 1 episode/task",
+        "path": RESULTS / "pointmaze_topology_stitch_all_env_seed0_ep1.csv",
+    },
+    {
+        "screen": "AntMaze navigate hard slice",
+        "eval_setting": "real env, tasks 4-5, seed 0, 5 episodes/task",
+        "path": RESULTS / "antmaze_navigate_hard_task45_ep5_seed0_current.csv",
+    },
+    {
+        "screen": "AntMaze stitch hard slice",
+        "eval_setting": "real env, tasks 4-5, seed 0, 5 episodes/task",
+        "path": RESULTS / "antmaze_stitch_hard_task45_ep5_seed0_current.csv",
+    },
+]
 
 
 METHOD_ORDER = [
@@ -2520,6 +2547,63 @@ def build_fast_eval_profile_summary() -> tuple[list[str], list[dict[str, str]]]:
     return fields, out
 
 
+def build_current_fast_hard_summary() -> tuple[list[str], list[dict[str, str]]]:
+    fields = [
+        "screen",
+        "env",
+        "eval_setting",
+        "eval_mode",
+        "task_ids",
+        "matched_sweeps",
+        "bellman_matched",
+        "support_trl",
+        "stochastic_trl",
+        "bellman_full",
+        "sto_minus_matched",
+        "setup_seconds",
+        "sto_eval_seconds",
+        "source",
+    ]
+    out: list[dict[str, str]] = []
+    for spec in CURRENT_FAST_HARD_SPECS:
+        path = Path(spec["path"])
+        if not path.exists():
+            continue
+        rows = read_rows(path)
+        by_method = {row["method"]: row for row in rows}
+        if "bellman_matched" not in by_method or "sto_trl_matched" not in by_method:
+            continue
+        matched = float(by_method["bellman_matched"]["overall_success"])
+        sto_row = by_method["sto_trl_matched"]
+        sto = float(sto_row["overall_success"])
+
+        def method_success(method: str) -> str:
+            row = by_method.get(method)
+            return "" if row is None else fmt(float(row["overall_success"]))
+
+        setup_seconds = to_float(sto_row.get("setup_seconds"))
+        sto_eval_seconds = to_float(sto_row.get("eval_seconds"))
+        out.append(
+            {
+                "screen": str(spec["screen"]),
+                "env": sto_row["env"],
+                "eval_setting": str(spec["eval_setting"]),
+                "eval_mode": sto_row.get("eval_mode", "env"),
+                "task_ids": sto_row.get("task_ids", "all"),
+                "matched_sweeps": str(int(float(by_method["bellman_matched"]["iters"]))),
+                "bellman_matched": fmt(matched),
+                "support_trl": method_success("support_trl_matched"),
+                "stochastic_trl": fmt(sto),
+                "bellman_full": method_success("bellman_full"),
+                "sto_minus_matched": fmt(sto - matched),
+                "setup_seconds": fmt(setup_seconds, digits=2),
+                "sto_eval_seconds": fmt(sto_eval_seconds, digits=2),
+                "source": str(path.relative_to(ROOT)),
+            }
+        )
+    return fields, out
+
+
 def build_antmaze_support_ablation_summary() -> tuple[list[str], list[dict[str, str]]]:
     fields = [
         "env",
@@ -3169,6 +3253,8 @@ def write_report(
     controller_iso_rows: list[dict[str, str]],
     fast_eval_fields: list[str],
     fast_eval_rows: list[dict[str, str]],
+    current_fast_fields: list[str],
+    current_fast_rows: list[dict[str, str]],
     antmaze_support_fields: list[str],
     antmaze_support_rows: list[dict[str, str]],
     pointmaze_tie_fields: list[str],
@@ -3261,6 +3347,7 @@ def write_report(
         "- `results/paper_tables/pointmaze_learned_controller_ep20_seed012.csv`",
         "- `results/paper_tables/controller_execution_isolation.csv`",
         "- `results/paper_tables/fast_eval_profile.csv`",
+        "- `results/paper_tables/current_fast_hard_screen.csv`",
         "- `results/paper_tables/antmaze_support_ablation_ep5_seed0_task45.csv`",
         "- `results/paper_tables/pointmaze_tie_policy_head_ep20_seed0.csv`",
         "- `results/paper_tables/pointmaze_rawobs_transition_prev_policy_head_ep20_seed0.csv`",
@@ -3345,6 +3432,12 @@ def write_report(
         markdown_table(fast_eval_fields, fast_eval_rows),
         "",
         "Fast-eval signal: cached topology and saved BC policies make single-seed hard-slice AntMaze screening cheap. With `--task-ids 4 5`, `--episodes 5`, and `--methods bellman_matched sto_trl_matched`, navigate reaches 0.900 stochastic TRL success and stitch reaches 1.000 in roughly five seconds per stochastic evaluation row. Increasing `--eval-action-repeat` to 2 is not claim-safe in the current stitch screen: it slightly reduces policy calls but drops stochastic TRL success from 1.000 to 0.750.",
+        "",
+        "### Current Fast-Hard Screen",
+        "",
+        markdown_table(current_fast_fields, current_fast_rows),
+        "",
+        "Current-screen signal: the optimized exact PointMaze model proxy makes failed 1000-step high-level policies cheap to rule out, while the current real-environment PointMaze and AntMaze hard-task screens keep stochastic TRL at high success with the matched 6-sweep budget. These rows are iteration evidence; the main paper table above remains the multi-seed claim.",
         "",
         "Empirical graph speed note: `scripts/run_pointmaze_graph_planner.py` caches solved graph Q tables and can profile rollouts with `--profile-eval`. On `pointmaze-teleport-stitch-v0` task 4, the first 220-sweep Bellman graph solve took `11.09s`, while a cache hit took `0.03s`; a failed 1000-step rollout took `0.39s`. The learned BC graph executor was faster per step than `transition_value`, but still failed stitch task 4 in the 10-episode seed-0 screen; see `results/pointmaze_graph_summary.md`.",
         "",
@@ -3572,6 +3665,7 @@ def main() -> None:
     pointmaze_bc_fields, pointmaze_bc_rows = build_pointmaze_bc_controller_summary()
     controller_iso_fields, controller_iso_rows = build_controller_execution_isolation(pointmaze_bc_rows)
     fast_eval_fields, fast_eval_rows = build_fast_eval_profile_summary()
+    current_fast_fields, current_fast_rows = build_current_fast_hard_summary()
     antmaze_support_fields, antmaze_support_rows = build_antmaze_support_ablation_summary()
     pointmaze_tie_fields, pointmaze_tie_rows = build_pointmaze_tie_policy_head_summary()
     pointmaze_prev_fields, pointmaze_prev_rows = build_pointmaze_prev_policy_head_summary()
@@ -3631,6 +3725,7 @@ def main() -> None:
         controller_iso_rows,
     )
     write_csv(TABLE_DIR / "fast_eval_profile.csv", fast_eval_fields, fast_eval_rows)
+    write_csv(TABLE_DIR / "current_fast_hard_screen.csv", current_fast_fields, current_fast_rows)
     write_csv(
         TABLE_DIR / "antmaze_support_ablation_ep5_seed0_task45.csv",
         antmaze_support_fields,
@@ -3773,6 +3868,8 @@ def main() -> None:
         controller_iso_rows,
         fast_eval_fields,
         fast_eval_rows,
+        current_fast_fields,
+        current_fast_rows,
         antmaze_support_fields,
         antmaze_support_rows,
         pointmaze_tie_fields,

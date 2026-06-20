@@ -1,0 +1,38 @@
+[
+  {
+    "action_agreement_to_full_mean": 0.3601010101010101,
+    "method": "qhead_sto_trl",
+    "n": 1,
+    "success_mean": 0.0015974981271548894,
+    "success_std": 0.0,
+    "task4_mean": 1.2795362742479114e-08,
+    "task5_mean": 0.0031949834589470364
+  },
+  {
+    "action_agreement_to_full_mean": 0.9585858585858585,
+    "method": "qhead_sto_trl_distill",
+    "n": 1,
+    "success_mean": 0.9999470731507711,
+    "success_std": 0.0,
+    "task4_mean": 0.9999364194956812,
+    "task5_mean": 0.9999577268058609
+  },
+  {
+    "action_agreement_to_full_mean": 1.0,
+    "method": "table_full_bellman",
+    "n": 1,
+    "success_mean": 0.9999470727819736,
+    "success_std": 0.0,
+    "task4_mean": 0.9999364194956792,
+    "task5_mean": 0.9999577260682679
+  },
+  {
+    "action_agreement_to_full_mean": 0.9808080808080808,
+    "method": "table_sto_trl_matched",
+    "n": 1,
+    "success_mean": 0.9999470727821931,
+    "success_std": 0.0,
+    "task4_mean": 0.9999364194956812,
+    "task5_mean": 0.9999577260687049
+  }
+]

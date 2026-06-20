@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -116,6 +117,44 @@ def stable_softmax(logits: np.ndarray) -> np.ndarray:
     shifted = logits - np.max(logits, axis=-1, keepdims=True)
     exp = np.exp(shifted)
     return exp / np.sum(exp, axis=-1, keepdims=True)
+
+
+def array_digest(array: np.ndarray) -> str:
+    arr = np.ascontiguousarray(array)
+    digest = hashlib.sha256()
+    digest.update(str(arr.shape).encode("utf-8"))
+    digest.update(str(arr.dtype).encode("utf-8"))
+    digest.update(arr.view(np.uint8))
+    return digest.hexdigest()
+
+
+def cached_stats(stats: ValueFitStats) -> ValueFitStats:
+    return ValueFitStats(
+        loss=stats.loss,
+        mse=stats.mse,
+        max_abs=stats.max_abs,
+        action_agreement=stats.action_agreement,
+        train_seconds=0.0,
+    )
+
+
+def value_supervision_cache_key(
+    value_model: str,
+    target_q: np.ndarray,
+    n_actions: int,
+    tie_tol: float,
+) -> str:
+    if value_model == "raw_obs_policy_mlp":
+        labels = np.argmax(target_q, axis=1).astype(np.int32)
+        return f"{value_model}:{array_digest(labels)}"
+    if value_model == "raw_obs_tie_policy_mlp":
+        max_q = target_q.max(axis=1, keepdims=True)
+        labels = (target_q >= (max_q - tie_tol)).astype(np.bool_)
+        return f"{value_model}:tol={tie_tol}:{array_digest(labels)}"
+    if value_model == "raw_obs_prev_policy_mlp":
+        labels = previous_action_policy_labels(target_q, n_actions)
+        return f"{value_model}:{array_digest(labels)}"
+    return f"{value_model}:{array_digest(target_q)}"
 
 
 def transition_metrics(probs: np.ndarray, target: np.ndarray, fitted_mask: np.ndarray, target_source: str, train_seconds: float) -> TransitionFitStats:
@@ -1062,6 +1101,8 @@ def main() -> None:
     q_by_method: dict[str, np.ndarray] = {}
     iters_by_method: dict[str, int] = {}
     value_fit_by_method: dict[str, ValueFitStats] = {}
+    value_cache_hit_by_method: dict[str, int] = {}
+    value_supervision_cache: dict[str, tuple[np.ndarray, ValueFitStats]] = {}
     for method in args.methods:
         value_iters, use_transitive = resolve_value_method(method, matched_iters, args.full_iters)
         table_q = train_model_value(
@@ -1070,69 +1111,7 @@ def main() -> None:
             value_iters,
             use_transitive=use_transitive,
         )
-        if args.value_model == "raw_obs_mlp":
-            fitted_q, value_stats = fit_raw_obs_value_mlp(
-                env,
-                train,
-                learned_topology,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                method,
-                args.value_policy_ce_weight,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-        elif args.value_model == "raw_obs_policy_mlp":
-            fitted_q, value_stats = fit_raw_obs_policy_mlp(
-                env,
-                train,
-                learned_topology,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                method,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-        elif args.value_model == "raw_obs_tie_policy_mlp":
-            fitted_q, value_stats = fit_raw_obs_tie_policy_mlp(
-                env,
-                train,
-                learned_topology,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                method,
-                args.value_tie_tol,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-        elif args.value_model == "raw_obs_prev_policy_mlp":
-            fitted_q, value_stats = fit_raw_obs_prev_policy_mlp(
-                env,
-                train,
-                learned_topology,
-                table_q,
-                args.value_steps,
-                args.value_mlp_lr,
-                args.value_seed,
-                tuple(args.value_hidden_dims),
-                args.value_log_interval,
-                method,
-            )
-            q_by_method[method] = fitted_q
-            value_fit_by_method[method] = value_stats
-        else:
+        if args.value_model == "table":
             q_by_method[method] = table_q
             value_fit_by_method[method] = ValueFitStats(
                 loss=0.0,
@@ -1141,6 +1120,89 @@ def main() -> None:
                 action_agreement=1.0,
                 train_seconds=0.0,
             )
+            value_cache_hit_by_method[method] = 0
+        else:
+            cache_key = value_supervision_cache_key(
+                args.value_model,
+                table_q,
+                learned_topology.n_actions,
+                args.value_tie_tol,
+            )
+            if cache_key in value_supervision_cache:
+                fitted_q, source_stats = value_supervision_cache[cache_key]
+                value_stats = cached_stats(source_stats)
+                value_cache_hit_by_method[method] = 1
+                print(
+                    f"[value-cache] supervision hit method={method} "
+                    f"model={args.value_model} key={cache_key[:32]}",
+                    flush=True,
+                )
+            elif args.value_model == "raw_obs_mlp":
+                fitted_q, value_stats = fit_raw_obs_value_mlp(
+                    env,
+                    train,
+                    learned_topology,
+                    table_q,
+                    args.value_steps,
+                    args.value_mlp_lr,
+                    args.value_seed,
+                    tuple(args.value_hidden_dims),
+                    args.value_log_interval,
+                    method,
+                    args.value_policy_ce_weight,
+                )
+                value_supervision_cache[cache_key] = (fitted_q, value_stats)
+                value_cache_hit_by_method[method] = 0
+            elif args.value_model == "raw_obs_policy_mlp":
+                fitted_q, value_stats = fit_raw_obs_policy_mlp(
+                    env,
+                    train,
+                    learned_topology,
+                    table_q,
+                    args.value_steps,
+                    args.value_mlp_lr,
+                    args.value_seed,
+                    tuple(args.value_hidden_dims),
+                    args.value_log_interval,
+                    method,
+                )
+                value_supervision_cache[cache_key] = (fitted_q, value_stats)
+                value_cache_hit_by_method[method] = 0
+            elif args.value_model == "raw_obs_tie_policy_mlp":
+                fitted_q, value_stats = fit_raw_obs_tie_policy_mlp(
+                    env,
+                    train,
+                    learned_topology,
+                    table_q,
+                    args.value_steps,
+                    args.value_mlp_lr,
+                    args.value_seed,
+                    tuple(args.value_hidden_dims),
+                    args.value_log_interval,
+                    method,
+                    args.value_tie_tol,
+                )
+                value_supervision_cache[cache_key] = (fitted_q, value_stats)
+                value_cache_hit_by_method[method] = 0
+            elif args.value_model == "raw_obs_prev_policy_mlp":
+                fitted_q, value_stats = fit_raw_obs_prev_policy_mlp(
+                    env,
+                    train,
+                    learned_topology,
+                    table_q,
+                    args.value_steps,
+                    args.value_mlp_lr,
+                    args.value_seed,
+                    tuple(args.value_hidden_dims),
+                    args.value_log_interval,
+                    method,
+                )
+                value_supervision_cache[cache_key] = (fitted_q, value_stats)
+                value_cache_hit_by_method[method] = 0
+            else:
+                raise ValueError(f"unknown value model {args.value_model}")
+            q_by_method[method] = fitted_q
+            value_fit_by_method[method] = value_stats
         iters_by_method[method] = value_iters
 
     rows: list[dict[str, float | int | str]] = []
@@ -1214,6 +1276,7 @@ def main() -> None:
                 "value_seed": args.value_seed,
                 "value_policy_ce_weight": args.value_policy_ce_weight,
                 "value_tie_tol": args.value_tie_tol,
+                "value_cache_hit": value_cache_hit_by_method[method],
                 "value_loss": value_fit_by_method[method].loss,
                 "value_mse": value_fit_by_method[method].mse,
                 "value_max_abs": value_fit_by_method[method].max_abs,

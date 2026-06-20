@@ -42,6 +42,85 @@ All headline rows compare the same 6-sweep planning budget against a
 50 episodes per task. AntMaze rows use three evaluation seeds and
 20 episodes per task.
 
+## Learned Neural Shortcut-Critic Evidence
+
+Generated from `results/paper_tables/neural_shortcut_phase.csv`; the figure is
+`results/figures/neural_shortcut_phase.pdf` and the detailed note is
+`results/neural_shortcut_phase.md`.
+
+| method | exact success | correct decision | risky action rate |
+| --- | ---: | ---: | ---: |
+| neural Bellman TD | 0.027 | 0.583 | 0.417 |
+| neural stochastic TRL | 1.000 | 1.000 | 0.000 |
+| neural support TRL | 0.093 | 0.000 | 1.000 |
+| table stochastic TRL | 1.000 | 1.000 | 0.000 |
+| table full Bellman | 1.000 | 1.000 | 0.000 |
+
+This is the first learned value-function evidence: a small MLP critic trained
+from empirical offline transitions on stochastic risky-shortcut MDPs with safe
+lengths 16, 32, and 64. Neural stochastic TRL matches the table stochastic-TRL
+and full-Bellman decisions under the logarithmic matched sweep budget, while
+neural Bellman TD is too slow to learn the full safe route and neural
+support-TRL over-composes the lucky risky shortcut. This supports the learned
+operator story, but it is still a controlled finite-MDP screen rather than an
+OGBench end-to-end actor result.
+
+## PointMaze Joint-Action Critic Evidence
+
+Generated from `results/pointmaze_qhead_target_fit_navigate_all_exact.csv`,
+`results/pointmaze_qhead_target_fit_stitch_all_exact.csv`,
+`results/pointmaze_qhead_target_fit_navigate_all_env_ep10_seed012.csv`, and
+`results/pointmaze_qhead_target_fit_stitch_all_env_ep10_seed012.csv`, with
+focused verification in `results/qhead_critic_claim_verification.md` and
+`results/qhead_multiseed_env_claim_verification.md`.
+
+| setting | qhead Bellman TD | qhead generated stochastic target | table matched Bellman | table stochastic TRL | qhead action agreement |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PointMaze teleport navigate | 0.066 | 1.000 | 0.476 | 1.000 | 0.966 |
+| PointMaze teleport stitch | 0.072 | 1.000 | 0.481 | 1.000 | 0.959 |
+
+Real environment rollout with the same PointMaze proportional controller:
+
+| setting | task scope | eval seeds | qhead Bellman TD | qhead generated stochastic target | table matched Bellman | table stochastic TRL |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| PointMaze teleport navigate | all tasks, 10 eps/task | 0,1,2 | 0.000 | 0.933 | 0.393 | 0.933 |
+| PointMaze teleport stitch | all tasks, 10 eps/task | 0,1,2 | 0.027 | 0.933 | 0.393 | 0.933 |
+| PointMaze teleport navigate | tasks 4,5, 20 eps/task | 0 | 0.000 | 1.000 | 0.500 | 1.000 |
+| PointMaze teleport stitch | tasks 4,5, 20 eps/task | 0 | 0.125 | 1.000 | 0.500 | 1.000 |
+
+This is the next learned-critic bridge after the finite-MDP shortcut screen. A
+joint-action critic `Q_theta(s,g) -> R^4`, trained on raw-observation
+state-goal features plus state/goal identifiers with the learned
+raw-observation transition head fixed, can carry a stochastic transitive target
+generated internally by matched-budget stochastic target iteration. It reaches
+1.000 success on PointMaze teleport navigate and stitch in exact high-level
+model evaluation, 0.933 success across three evaluation seeds in all-task real
+rollouts, and 1.000 success on hard tasks 4 and 5 in single-seed real
+rollouts. The
+matched-budget Bellman TD q-head and the raw self-bootstrapped stochastic q-head
+remain low. This should be claimed as a two-phase generated-target learned
+critic over the learned high-level MDP, not as a solved fully self-bootstrapped
+neural fitted-iteration algorithm.
+The self-bootstrap boundary is now verifier-covered by
+`results/qhead_stabilization_boundary_verification.md`: monotone targets,
+self-buffering, fresh projected iteration, high rank loss, and generated-target
+action-label guidance all remain far below the generated-target q-head on the
+PointMaze navigate exact screen. A reset-final target-buffer variant is a new
+positive stabilization: after explicit target-buffer generation, resetting the
+q-head and optimizer for final consolidation reaches 1.000 exact success on
+both PointMaze navigate and stitch. In a three-evaluation-seed real-environment
+support check, the same reset-final q-head reaches 0.933 on both variants,
+matching generated-target q-head, table stochastic TRL, and full Bellman.
+A top-4 bridge waypoint variant preserves these results while composing over
+only four retrieved waypoints per state-goal pair.
+A sampled target-buffer variant is also positive in a bounded support screen:
+using 64 sampled offline next states per row and 32 sampled bridge candidates
+per state-goal pair, while retaining four bridge waypoints per backup, it
+reaches 1.000 exact success and 0.980 seed-0 real-environment success on both
+PointMaze teleport variants, matching table stochastic TRL and full Bellman in
+those rows. This is verified by
+`results/qhead_sampled_buffered_verification.md`.
+
 ## Fast Hard-Task Stress Evidence
 
 Generated from `results/paper_tables/hard_task_stress_seed0.csv` and verified
@@ -56,6 +135,16 @@ against raw CSVs by `scripts/verify_main_claims.py`.
 These are single-evaluation-seed stress checks for fast iteration on harder
 task slices. They should support discussion and debugging, not replace the
 main multi-seed evidence.
+
+The current fast-hard iteration table
+`results/paper_tables/current_fast_hard_screen.csv` is also generated and
+verified by `scripts/verify_main_claims.py`. It records the optimized exact
+PointMaze model proxy and current real-environment hard-task checks: PointMaze
+stitch tasks 4,5 reach 1.000 stochastic-TRL success in the exact proxy,
+PointMaze navigate/stitch all-task seed-0 real-env checks reach 1.000, and
+AntMaze navigate/stitch hard-task checks reach 0.900/1.000 while matching the
+180-sweep Bellman reference. This is iteration evidence, not a replacement for
+the headline multi-seed table.
 
 ## Focused PointMaze Single-Task Evidence
 
@@ -148,6 +237,10 @@ then verified against raw CSVs by `scripts/verify_main_claims.py`.
 | AntMaze stitch, 3 eval seeds | raw-observation transition + tie-policy MLP + 20k BC | 0.283 | 0.967 | 0.967 | 0.999 |
 | AntMaze navigate, previous-action head, 3 eval seeds | raw-observation transition + prev-action policy MLP + 50k BC | 0.350 | 0.933 | 0.933 | 1.000 |
 | AntMaze stitch, previous-action head, 3 eval seeds | raw-observation transition + prev-action policy MLP + 20k BC | 0.283 | 0.967 | 0.950 | 1.000 |
+| AntMaze navigate, previous-action all tasks, 3 eps/task | raw-observation transition + prev-action policy MLP + 50k BC | 0.200 | 0.933 | 0.933 | 1.000 |
+| AntMaze stitch, previous-action all tasks, 3 eps/task | raw-observation transition + prev-action policy MLP + 20k BC | 0.200 | 0.933 | 0.933 | 1.000 |
+| AntMaze navigate, previous-action all tasks, 5 eps/task | raw-observation transition + prev-action policy MLP + 50k BC | 0.360 | 0.920 | 0.920 | 1.000 |
+| AntMaze stitch, previous-action all tasks, 5 eps/task | raw-observation transition + prev-action policy MLP + 20k BC | 0.360 | 0.960 | 0.960 | 1.000 |
 
 PointMaze also uses the learned raw-observation transition head; the three
 evaluation-seed rows fix transition seed 0 and aggregate eval seeds 0, 1, and
@@ -167,6 +260,11 @@ and 2 over tasks 4 and 5 with 10 episodes per task. Together they show that a
 single-label neural high-level policy can recover the sticky tie-breaking
 behavior when the previous high-level action is explicit, staying within 0.02
 of the full-Bellman rollout reference in these diagnostics.
+The AntMaze all-task previous-action rows are bounded seed-0 support screens
+with 3 and 5 episodes per task, verified by
+`scripts/verify_antmaze_alltask_prev_policy.py` and summarized in
+`results/antmaze_alltask_prev_policy_summary.md`; they should not replace the
+multi-eval-seed hard-task rows.
 
 Additional AntMaze screen: fitting only observed offline jump/teleport rows
 with `dataset_jump_changes` and keeping local moves at the topology scaffold
@@ -248,6 +346,9 @@ Sources:
 - On PointMaze teleport navigate/stitch and AntMaze teleport navigate/stitch,
   stochastic TRL reaches or nearly reaches the long-sweep Bellman reference at
   the matched 6-sweep budget.
+- On controlled stochastic shortcut MDPs, a learned MLP stochastic-TRL critic
+  reaches 1.000 exact success across safe lengths 16, 32, and 64, while neural
+  Bellman TD and neural support-TRL fail under the same matched budget.
 - On PointMaze, the result also survives replacing the simple topology executor
   with saved 5k-step full-goal BC controllers across three evaluation seeds.
 - On both AntMaze navigate and stitch, high success is robust across three
@@ -275,6 +376,18 @@ Sources:
 - With transition seed 0 fixed, the same combined AntMaze learned-module screen
   reaches 0.933 on navigate and 0.967 on stitch across three evaluation seeds,
   matching full Bellman while matched Bellman is 0.283.
+- The previous-action version of the same AntMaze learned-module screen also
+  remains positive across all five tasks in seed-0 support checks: with 5
+  episodes per task it reaches 0.920 on navigate and 0.960 on stitch, matching
+  full Bellman while matched Bellman reaches 0.360.
+- A raw-observation joint-action q-head diagnostic is positive on AntMaze
+  navigate hard tasks, reaching 1.000 stochastic-TRL success and matching the
+  learned full-Bellman q-head while the matched Bellman q-head reaches 0.333.
+  The same q-head is a boundary on AntMaze stitch: stochastic and full-Bellman
+  q-heads both reach only 0.667, and 10000 fitting steps do not improve task 5.
+  A previous-action-conditioned q-head also fails on stitch, with stochastic
+  and full-Bellman q-head success both at 0.000 in the current hard-task screen.
+  This is verified by `results/antmaze_qhead_hard_task_verification.md`.
 - A focused path-following diagnostic shows persistent waypoint tracking is a
   non-promoted executor ablation: on AntMaze navigate hard tasks 4 and 5 it
   reaches 0.917 stochastic-TRL success across three evaluation seeds while
@@ -290,8 +403,9 @@ Sources:
 ## Non-Claims
 
 - Do not claim this is already a complete end-to-end neural TRL algorithm.
-  Current continuous-control results use a model/topology-level stochastic
-  planner plus a learned BC executor.
+  The neural shortcut critic is learned, but current continuous-control
+  results use a model/topology-level stochastic planner plus a learned BC
+  executor.
 - Do not claim the raw-observation value/control story is generally solved.
   The scalar value MLP and previous-action-free single-label policy MLP
   diagnostics in `results/raw_obs_value_policy_diagnostic.md` drop to 0.000
@@ -299,6 +413,27 @@ Sources:
   positive diagnostics, but they are still learned high-level heads over the
   cell abstraction/topology scaffold rather than complete end-to-end neural TRL
   agents.
+- Do not claim a fully self-bootstrapped PointMaze q-head critic is solved.
+  Fresh projected iteration reaches 0.000 exact success, and a guided-rank
+  variant with generated stochastic-TRL action labels reaches only 0.119 even
+  with `rank_ce_weight=10.0`. The reset-final target-buffer q-head is positive
+  in exact PointMaze model evaluation and in three-evaluation-seed PointMaze
+  real-environment support checks, but it still relies on explicit
+  target-buffer generation over the learned high-level transition model. The
+  top-4 bridge variant reduces all-waypoint composition but does not remove the
+  learned high-level transition matrix. The sampled target-buffer variant
+  reduces explicit matrix-backup dependence and reaches high seed-0 success, but
+  it is still a high-level sampled-target diagnostic rather than a projected
+  target-network self-bootstrap algorithm. A direct sampled target-network
+  projection with the same sample counts remains low on PointMaze navigate
+  exact evaluation, even with heavier fitting. Removing the final reset-fit from
+  the sampled target-buffer variant, or replacing it with reset-each-iteration
+  target replay, also fails in the current navigate exact screens.
+- Do not claim the AntMaze q-head replaces the previous-action policy head yet.
+  It solves navigate hard tasks, but the learned q-head full-Bellman reference
+  itself reaches only 0.667 on stitch tasks 4 and 5 in the current screen. The
+  previous-action-conditioned q-head variant is worse on stitch, with
+  stochastic and full-Bellman q-head success both at 0.000.
 - Do not claim stochastic TRL beats full Bellman. The claim is horizon
   efficiency: matching or nearly matching the long-sweep Bellman reference with
   far fewer sweeps.
@@ -345,9 +480,13 @@ Sources:
 
 ## Remaining High-Impact Gaps
 
-1. Extend the raw-observation transition/value story beyond the current
+1. Replace the remaining target-buffer generation in the reset-final q-head path
+   with a stronger projected update. The sampled offline target-buffer screen is
+   positive on PointMaze, but it still forms an explicit final target buffer
+   before consolidation; direct sampled target-network, no-final buffer, and
+   reset-each-iteration replay variants are negative boundaries, not the
+   solution.
+2. Extend the raw-observation transition/value story beyond the current
    high-level cell-abstraction screens, ideally to a differentiable auxiliary
    loss in the TRL codebase that reproduces the topology-level stochastic TRL
    signal without a discrete planner.
-2. If compute allows, run a bounded longer neural/controller experiment only
-   after a short screen clears a plausible path to 0.90+ success.

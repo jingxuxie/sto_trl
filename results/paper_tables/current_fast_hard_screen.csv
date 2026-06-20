@@ -1,0 +1,6 @@
+screen,env,eval_setting,eval_mode,task_ids,matched_sweeps,bellman_matched,support_trl,stochastic_trl,bellman_full,sto_minus_matched,setup_seconds,sto_eval_seconds,source
+PointMaze exact hard slice,pointmaze-teleport-stitch-v0,"model exact, tasks 4-5, seed 0",model,"4,5",6,0.478,0.507,1.000,1.000,0.522,,0.01,results/pointmaze_topology_stitch_task45_fast_exact.csv
+PointMaze navigate all tasks,pointmaze-teleport-navigate-v0,"real env, all tasks, seed 0, 1 episode/task",env,all,6,0.200,0.400,1.000,1.000,0.800,,0.13,results/pointmaze_topology_navigate_all_env_seed0_ep1.csv
+PointMaze stitch all tasks,pointmaze-teleport-stitch-v0,"real env, all tasks, seed 0, 1 episode/task",env,all,6,0.200,0.400,1.000,1.000,0.800,,0.16,results/pointmaze_topology_stitch_all_env_seed0_ep1.csv
+AntMaze navigate hard slice,antmaze-teleport-navigate-v0,"real env, tasks 4-5, seed 0, 5 episodes/task",env,"4,5",6,0.400,,0.900,0.900,0.500,1.15,4.55,results/antmaze_navigate_hard_task45_ep5_seed0_current.csv
+AntMaze stitch hard slice,antmaze-teleport-stitch-v0,"real env, tasks 4-5, seed 0, 5 episodes/task",env,"4,5",6,0.600,,1.000,1.000,0.400,1.15,4.31,results/antmaze_stitch_hard_task45_ep5_seed0_current.csv

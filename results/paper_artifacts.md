@@ -12,6 +12,7 @@ Generated from the current stochastic TRL prototype results.
 - `results/paper_tables/pointmaze_learned_controller_ep20_seed012.csv`
 - `results/paper_tables/controller_execution_isolation.csv`
 - `results/paper_tables/fast_eval_profile.csv`
+- `results/paper_tables/current_fast_hard_screen.csv`
 - `results/paper_tables/antmaze_support_ablation_ep5_seed0_task45.csv`
 - `results/paper_tables/pointmaze_tie_policy_head_ep20_seed0.csv`
 - `results/paper_tables/pointmaze_rawobs_transition_prev_policy_head_ep20_seed0.csv`
@@ -125,6 +126,18 @@ Controller-isolation signal: short direct final-goal actor screens in the offici
 | antmaze stitch hard slice | action-repeat ablation | antmaze-teleport-stitch-v0 | 4,5 | 0 | 2 | 2 | 0.500 | 0.750 | 0.250 | 1.09 | 1.50 | 1.96 | 0.314 | 0.449 | results/antmaze_stitch_fast_profile_repeat2_ep2_seed0_task45.csv |
 
 Fast-eval signal: cached topology and saved BC policies make single-seed hard-slice AntMaze screening cheap. With `--task-ids 4 5`, `--episodes 5`, and `--methods bellman_matched sto_trl_matched`, navigate reaches 0.900 stochastic TRL success and stitch reaches 1.000 in roughly five seconds per stochastic evaluation row. Increasing `--eval-action-repeat` to 2 is not claim-safe in the current stitch screen: it slightly reduces policy calls but drops stochastic TRL success from 1.000 to 0.750.
+
+### Current Fast-Hard Screen
+
+| screen | env | eval_setting | eval_mode | task_ids | matched_sweeps | bellman_matched | support_trl | stochastic_trl | bellman_full | sto_minus_matched | setup_seconds | sto_eval_seconds | source |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PointMaze exact hard slice | pointmaze-teleport-stitch-v0 | model exact, tasks 4-5, seed 0 | model | 4,5 | 6 | 0.478 | 0.507 | 1.000 | 1.000 | 0.522 |  | 0.01 | results/pointmaze_topology_stitch_task45_fast_exact.csv |
+| PointMaze navigate all tasks | pointmaze-teleport-navigate-v0 | real env, all tasks, seed 0, 1 episode/task | env | all | 6 | 0.200 | 0.400 | 1.000 | 1.000 | 0.800 |  | 0.13 | results/pointmaze_topology_navigate_all_env_seed0_ep1.csv |
+| PointMaze stitch all tasks | pointmaze-teleport-stitch-v0 | real env, all tasks, seed 0, 1 episode/task | env | all | 6 | 0.200 | 0.400 | 1.000 | 1.000 | 0.800 |  | 0.16 | results/pointmaze_topology_stitch_all_env_seed0_ep1.csv |
+| AntMaze navigate hard slice | antmaze-teleport-navigate-v0 | real env, tasks 4-5, seed 0, 5 episodes/task | env | 4,5 | 6 | 0.400 |  | 0.900 | 0.900 | 0.500 | 1.15 | 4.55 | results/antmaze_navigate_hard_task45_ep5_seed0_current.csv |
+| AntMaze stitch hard slice | antmaze-teleport-stitch-v0 | real env, tasks 4-5, seed 0, 5 episodes/task | env | 4,5 | 6 | 0.600 |  | 1.000 | 1.000 | 0.400 | 1.15 | 4.31 | results/antmaze_stitch_hard_task45_ep5_seed0_current.csv |
+
+Current-screen signal: the optimized exact PointMaze model proxy makes failed 1000-step high-level policies cheap to rule out, while the current real-environment PointMaze and AntMaze hard-task screens keep stochastic TRL at high success with the matched 6-sweep budget. These rows are iteration evidence; the main paper table above remains the multi-seed claim.
 
 Empirical graph speed note: `scripts/run_pointmaze_graph_planner.py` caches solved graph Q tables and can profile rollouts with `--profile-eval`. On `pointmaze-teleport-stitch-v0` task 4, the first 220-sweep Bellman graph solve took `11.09s`, while a cache hit took `0.03s`; a failed 1000-step rollout took `0.39s`. The learned BC graph executor was faster per step than `transition_value`, but still failed stitch task 4 in the 10-episode seed-0 screen; see `results/pointmaze_graph_summary.md`.
 
